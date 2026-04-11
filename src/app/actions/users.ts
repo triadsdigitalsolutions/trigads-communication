@@ -52,7 +52,7 @@ export async function deleteUserAction(id: string) {
     }
 
     try {
-        if (id === (session.user as any).id) {
+        if (id === (session?.user as any)?.id) {
             return { success: false, error: "You cannot delete your own account" };
         }
 
