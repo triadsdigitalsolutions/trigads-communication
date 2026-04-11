@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock } from "lucide-react";
+import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,7 @@ export default function ChatClient({
     const [messageInput, setMessageInput] = useState("");
     const [isLoadingMessages, setIsLoadingMessages] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
 
     // New Chat State
     const [isNewChatOpen, setIsNewChatOpen] = useState(false);
@@ -348,6 +349,7 @@ export default function ChatClient({
 
             setContacts(prev => [newContact, ...prev]);
             setSelectedContact(newContact);
+            setIsMobileChatOpen(true);
             setIsNewChatOpen(false);
             setNewChatName("");
             setNewChatPhone("");
@@ -407,7 +409,7 @@ export default function ChatClient({
     return (
         <div className="flex h-full bg-background font-sans overflow-hidden">
             {/* Column 2: Contacts List */}
-            <div className="w-[400px] flex flex-col border-r border-border bg-white shrink-0">
+            <div className={`w-full md:w-[320px] lg:w-[400px] flex-col border-r border-border bg-white shrink-0 ${isMobileChatOpen ? 'hidden md:flex' : 'flex'} transition-all`}>
                 <div className="p-8 space-y-6">
                     <div className="flex items-center justify-between">
                         <h1 className="text-4xl font-black tracking-tighter text-foreground">Chats</h1>
@@ -489,7 +491,10 @@ export default function ChatClient({
                             filteredContacts.map((contact) => (
                                 <div
                                     key={contact.id}
-                                    onClick={() => setSelectedContact(contact)}
+                                    onClick={() => {
+                                        setSelectedContact(contact);
+                                        setIsMobileChatOpen(true);
+                                    }}
                                     className={`relative p-6 cursor-pointer transition-all duration-300 rounded-[2rem] group border ${selectedContact?.id === contact.id
                                         ? "bg-white shadow-elevated border-border"
                                         : "bg-transparent border-transparent hover:bg-secondary/30"
@@ -570,18 +575,26 @@ export default function ChatClient({
             </div>
 
             {/* Column 3: Chat Window */}
-            <div className="flex-1 flex flex-col bg-secondary/20 relative min-h-0 overflow-hidden">
+            <div className={`flex-1 flex-col bg-secondary/20 relative min-h-0 overflow-hidden ${isMobileChatOpen ? 'flex' : 'hidden md:flex'}`}>
                 {selectedContact ? (
                     <>
                         {/* Chat Header */}
-                        <div className="h-20 border-b border-border flex items-center justify-between px-10 bg-white/50 backdrop-blur-xl z-10 shrink-0">
-                            <div className="flex items-center gap-5">
-                                <Avatar className="h-14 w-14 rounded-2xl shadow-premium">
+                        <div className="h-20 border-b border-border flex items-center justify-between px-4 md:px-10 bg-white/50 backdrop-blur-xl z-10 shrink-0">
+                            <div className="flex items-center gap-3 md:gap-5">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="md:hidden rounded-xl h-10 w-10 text-muted-foreground hover:bg-secondary/80 mr-1 shrink-0"
+                                    onClick={() => setIsMobileChatOpen(false)}
+                                >
+                                    <ArrowLeft className="w-6 h-6" />
+                                </Button>
+                                <Avatar className="h-12 w-12 md:h-14 md:w-14 rounded-2xl shadow-premium shrink-0">
                                     <AvatarFallback className="bg-primary/10 text-primary text-xl font-black uppercase">{selectedContact.name[0]}</AvatarFallback>
                                 </Avatar>
-                                <div>
-                                    <h2 className="font-black text-2xl tracking-tighter text-foreground">{selectedContact.name}</h2>
-                                    <div className="flex items-center gap-3 mt-1">
+                                <div className="min-w-0">
+                                    <h2 className="font-black text-xl md:text-2xl tracking-tighter text-foreground truncate">{selectedContact.name}</h2>
+                                    <div className="flex items-center gap-2 md:gap-3 mt-1 overflow-hidden">
                                         <div className="flex items-center gap-2">
                                             {selectedContact.tags?.map(tag => {
                                                 const tagConfig = PREDEFINED_TAGS.find(t => t.label === tag);
@@ -595,15 +608,15 @@ export default function ChatClient({
                                                 );
                                             })}
                                         </div>
-                                        <p className="text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60">Verified business line</p>
+                                        <p className="text-[10px] md:text-xs text-muted-foreground font-black uppercase tracking-widest opacity-60 hidden sm:block truncate">Verified Line</p>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2 md:gap-4">
                                 <Dialog>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="rounded-2xl h-12 w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary">
-                                            <Tag className="w-5 h-5" />
+                                        <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 md:h-12 md:w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary shrink-0">
+                                            <Tag className="w-4 h-4 md:w-5 md:h-5" />
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="bg-white border-border rounded-[2.5rem] p-10 max-sm:w-[90vw] max-w-sm">
@@ -635,8 +648,8 @@ export default function ChatClient({
 
                                 <Dialog open={isClearConfirmOpen} onOpenChange={setIsClearConfirmOpen}>
                                     <DialogTrigger asChild>
-                                        <Button variant="ghost" size="icon" className="rounded-2xl h-12 w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary hover:text-destructive">
-                                            <Trash2 className="w-5 h-5" />
+                                        <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 md:h-12 md:w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary hover:text-destructive shrink-0">
+                                            <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="bg-white border-border rounded-[2.5rem] p-10 max-w-md">
@@ -670,13 +683,13 @@ export default function ChatClient({
                                     </DialogContent>
                                 </Dialog>
 
-                                <Button variant="ghost" size="icon" className="rounded-2xl h-12 w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary">
-                                    <Paperclip className="w-5 h-5" />
+                                <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 md:h-12 md:w-12 bg-secondary/50 text-foreground transition-all hover:bg-secondary shrink-0">
+                                    <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
                                 </Button>
                                 {(isAdmin || selectedContact.assignedToId === currentUser.id) && (
-                                    <div className="relative shrink-0">
+                                    <div className="relative shrink-0 hidden md:block">
                                         <select
-                                            className="h-12 min-w-[200px] rounded-2xl bg-secondary/50 border-none pl-6 pr-12 text-[10px] font-black uppercase tracking-widest text-foreground focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none transition-all hover:bg-secondary truncate"
+                                            className="h-10 md:h-12 w-10 md:min-w-[160px] lg:min-w-[200px] rounded-xl md:rounded-2xl bg-secondary/50 border-none md:pl-6 md:pr-12 text-transparent md:text-[10px] text-center md:text-left font-black uppercase tracking-widest md:text-foreground focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none transition-all hover:bg-secondary truncate"
                                             value={selectedContact.assignedToId || ""}
                                             onChange={(e) => handleAssign(selectedContact.id, e.target.value || null)}
                                         >
@@ -685,7 +698,7 @@ export default function ChatClient({
                                                 <option key={agent.id} value={agent.id}>{agent.name} ({agent.role})</option>
                                             ))}
                                         </select>
-                                        <UserIcon className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                        <UserIcon className="absolute right-3 md:right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                                     </div>
                                 )}
                             </div>
@@ -848,12 +861,12 @@ export default function ChatClient({
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                                        className="h-16 bg-white border border-border rounded-2xl pl-28 pr-12 text-foreground font-bold shadow-elevated focus-visible:ring-primary/10 transition-all text-base"
+                                        className="h-14 md:h-16 bg-white border border-border rounded-2xl pl-[90px] md:pl-28 pr-[110px] md:pr-[130px] text-foreground font-bold shadow-elevated focus-visible:ring-primary/10 transition-all text-sm md:text-base placeholder:text-xs md:placeholder:text-sm text-ellipsis"
                                     />
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                         <Popover>
                                             <PopoverTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="rounded-xl h-10 w-10 text-muted-foreground hover:text-primary transition-all">
+                                                <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-primary transition-all">
                                                     <Smile className="w-5 h-5" />
                                                 </Button>
                                             </PopoverTrigger>
@@ -872,7 +885,7 @@ export default function ChatClient({
                                             size="icon"
                                             onClick={handleAttachmentClick}
                                             disabled={isUploading}
-                                            className="h-10 w-10 rounded-xl hover:bg-primary/5 text-muted-foreground transition-all active:scale-90 disabled:opacity-50"
+                                            className="h-8 w-8 md:h-10 md:w-10 rounded-xl hover:bg-primary/5 text-muted-foreground transition-all active:scale-90 disabled:opacity-50"
                                         >
                                             {isUploading ? (
                                                 <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -892,7 +905,7 @@ export default function ChatClient({
                                             variant="ghost"
                                             size="icon"
                                             onClick={handleOpenTemplates}
-                                            className="h-12 w-12 rounded-xl hover:bg-primary/5 text-primary transition-all active:scale-90 group"
+                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl hover:bg-primary/5 text-primary transition-all active:scale-90 group"
                                         >
                                             <Zap className="w-5 h-5 fill-primary/10 group-hover:fill-primary/20 transition-all" />
                                         </Button>
@@ -901,7 +914,7 @@ export default function ChatClient({
                                             size="icon"
                                             onClick={handleSendMessage}
                                             disabled={!messageInput.trim()}
-                                            className="h-12 w-12 rounded-xl bg-primary text-primary-foreground shadow-glow active:scale-90 transition-all shrink-0"
+                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground shadow-glow active:scale-90 transition-all shrink-0"
                                         >
                                             <Send className="w-5 h-5 stroke-[4px]" />
                                         </Button>
