@@ -77,7 +77,7 @@ export default async function DashboardLayout({
             </aside>
 
             {/* Main content area */}
-            <main className="flex-1 relative overflow-hidden bg-background pb-28 md:pb-0 pt-0">
+            <main className="flex-1 relative overflow-y-auto overflow-x-hidden bg-background pb-32 md:pb-0 pt-0 custom-scrollbar">
                 {children}
             </main>
         </div>

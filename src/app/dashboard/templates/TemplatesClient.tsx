@@ -203,13 +203,13 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 animate-in fade-in slide-in-from-bottom-5 duration-500">
                     <Card className="border-border shadow-elevated bg-white/80 backdrop-blur-xl rounded-[2.5rem] overflow-hidden">
-                        <CardHeader className="p-10 pb-6 border-b border-border">
-                            <CardTitle className="text-3xl font-black tracking-tighter text-foreground">Template Designer</CardTitle>
-                            <CardDescription className="text-sm font-medium mt-2">Configure header, body, and interactive buttons.</CardDescription>
+                        <CardHeader className="p-6 md:p-10 pb-4 md:pb-6 border-b border-border shrink-0">
+                            <CardTitle className="text-2xl md:text-3xl font-black tracking-tighter text-foreground">Template Designer</CardTitle>
+                            <CardDescription className="text-xs md:text-sm font-medium mt-2">Configure header, body, and interactive buttons.</CardDescription>
                         </CardHeader>
-                        <ScrollArea className="h-[600px]">
-                            <CardContent className="p-10 space-y-8">
-                                <div className="grid grid-cols-3 gap-6">
+                        <ScrollArea className="flex-1 lg:h-[600px]">
+                            <CardContent className="p-6 md:p-10 space-y-8">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div className="space-y-3">
                                         <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">Template Name</label>
                                         <Input
@@ -317,9 +317,9 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                         <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">Interactive Buttons</label>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-wrap gap-2">
                                             <Button variant="ghost" size="sm" onClick={() => addButton("QUICK_REPLY")} className="h-8 text-[10px] font-black uppercase bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20">+ Reply</Button>
                                             <Button variant="ghost" size="sm" onClick={() => addButton("URL")} className="h-8 text-[10px] font-black uppercase bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20">+ Link</Button>
                                             <Button variant="ghost" size="sm" onClick={() => addButton("PHONE_NUMBER")} className="h-8 text-[10px] font-black uppercase bg-primary/10 text-primary border border-primary/20 rounded-lg hover:bg-primary/20">+ Phone</Button>
@@ -328,46 +328,62 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
 
                                     <div className="space-y-3">
                                         {formData.buttons.map((btn, idx) => (
-                                            <div key={idx} className="flex gap-3 items-center animate-in slide-in-from-right-2 duration-300">
-                                                <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                                                    {btn.type === "QUICK_REPLY" && <MousePointer2 className="w-4 h-4 text-primary" />}
-                                                    {btn.type === "URL" && <LinkIcon className="w-4 h-4 text-blue-500" />}
-                                                    {btn.type === "PHONE_NUMBER" && <Phone className="w-4 h-4 text-green-500" />}
-                                                </div>
-                                                <Input
-                                                    placeholder="Button text..."
-                                                    value={btn.text}
-                                                    onChange={(e) => {
-                                                        const nb = [...formData.buttons];
-                                                        nb[idx].text = e.target.value;
-                                                        setFormData({ ...formData, buttons: nb });
-                                                    }}
-                                                    className="h-10 bg-secondary/50 border-none rounded-xl px-4 font-bold text-xs text-foreground"
-                                                />
-                                                {btn.type === "URL" && (
+                                            <div key={idx} className="flex flex-col sm:flex-row gap-3 items-start sm:items-center animate-in slide-in-from-right-2 duration-300 p-4 sm:p-0 bg-secondary/20 sm:bg-transparent rounded-2xl sm:rounded-none">
+                                                <div className="flex gap-3 items-center w-full sm:w-auto shrink-0">
+                                                    <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center shrink-0">
+                                                        {btn.type === "QUICK_REPLY" && <MousePointer2 className="w-4 h-4 text-primary" />}
+                                                        {btn.type === "URL" && <LinkIcon className="w-4 h-4 text-blue-500" />}
+                                                        {btn.type === "PHONE_NUMBER" && <Phone className="w-4 h-4 text-green-500" />}
+                                                    </div>
                                                     <Input
-                                                        placeholder="https://..."
-                                                        value={btn.url}
+                                                        placeholder="Button text..."
+                                                        value={btn.text}
                                                         onChange={(e) => {
                                                             const nb = [...formData.buttons];
-                                                            nb[idx].url = e.target.value;
+                                                            nb[idx].text = e.target.value;
                                                             setFormData({ ...formData, buttons: nb });
                                                         }}
-                                                        className="h-10 bg-secondary/50 border-none rounded-xl px-4 font-bold text-xs flex-1 text-foreground"
+                                                        className="h-10 bg-secondary/50 border-none rounded-xl px-4 font-bold text-xs text-foreground flex-1 sm:w-32"
                                                     />
-                                                )}
-                                                <Button variant="ghost" size="icon" onClick={() => removeButton(idx)} className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl">
-                                                    <XCircle className="w-4 h-4" />
-                                                </Button>
+                                                </div>
+                                                <div className="flex gap-3 items-center w-full sm:flex-1">
+                                                    {btn.type === "URL" && (
+                                                        <Input
+                                                            placeholder="https://..."
+                                                            value={btn.url}
+                                                            onChange={(e) => {
+                                                                const nb = [...formData.buttons];
+                                                                nb[idx].url = e.target.value;
+                                                                setFormData({ ...formData, buttons: nb });
+                                                            }}
+                                                            className="h-10 bg-secondary/50 border-none rounded-xl px-4 font-bold text-xs flex-1 text-foreground"
+                                                        />
+                                                    )}
+                                                    {btn.type === "PHONE_NUMBER" && (
+                                                        <Input
+                                                            placeholder="+1234567890"
+                                                            value={btn.phone_number}
+                                                            onChange={(e) => {
+                                                                const nb = [...formData.buttons];
+                                                                nb[idx].phone_number = e.target.value;
+                                                                setFormData({ ...formData, buttons: nb });
+                                                            }}
+                                                            className="h-10 bg-secondary/50 border-none rounded-xl px-4 font-bold text-xs flex-1 text-foreground"
+                                                        />
+                                                    )}
+                                                    <Button variant="ghost" size="icon" onClick={() => removeButton(idx)} className="h-10 w-10 text-destructive hover:bg-destructive/10 rounded-xl shrink-0">
+                                                        <XCircle className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             </CardContent>
                         </ScrollArea>
-                        <div className="p-10 border-t border-border flex justify-end gap-4 bg-secondary/20">
-                            <Button variant="ghost" onClick={() => setIsCreating(false)} className="rounded-[1.25rem] h-14 px-10 font-black uppercase tracking-widest text-muted-foreground">Discard</Button>
-                            <Button onClick={handleSubmit} className="rounded-[1.25rem] h-14 px-12 font-black uppercase tracking-widest shadow-glow">Submit to Meta</Button>
+                        <div className="p-6 md:p-10 border-t border-border flex justify-end gap-3 shrink-0 bg-secondary/20">
+                            <Button variant="ghost" onClick={() => setIsCreating(false)} className="rounded-[1.25rem] h-12 md:h-14 px-6 md:px-10 font-black uppercase tracking-widest text-muted-foreground w-full md:w-auto">Discard</Button>
+                            <Button onClick={handleSubmit} className="rounded-[1.25rem] h-12 md:h-14 px-6 md:px-12 font-black uppercase tracking-widest shadow-glow w-full md:w-auto">Submit</Button>
                         </div>
                     </Card>
 

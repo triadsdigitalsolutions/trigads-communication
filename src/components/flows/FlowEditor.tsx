@@ -207,30 +207,30 @@ export default function FlowEditor({ flow }: { flow: any }) {
     return (
         <div className="flex flex-col h-screen bg-background overflow-hidden font-sans">
             {/* Minimalist Editor Header */}
-            <header className="h-24 bg-white/50 backdrop-blur-2xl border-b border-border px-10 flex items-center justify-between z-10 shrink-0">
-                <div className="flex items-center gap-8">
+            <header className="h-auto md:h-24 py-4 md:py-0 bg-white/50 backdrop-blur-2xl border-b border-border px-4 md:px-10 flex flex-col sm:flex-row items-center justify-between gap-4 z-10 shrink-0">
+                <div className="flex items-center gap-3 md:gap-8 w-full sm:w-auto overflow-hidden">
                     <Link href="/dashboard/flows">
-                        <Button variant="ghost" size="icon" className="group rounded-2xl h-14 w-14 bg-secondary/50 border border-border/50 hover:bg-primary/10 hover:border-primary/20 transition-all">
-                            <ChevronLeft className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                        <Button variant="ghost" size="icon" className="group rounded-2xl h-10 w-10 md:h-14 md:w-14 bg-secondary/50 border border-border/50 hover:bg-primary/10 hover:border-primary/20 transition-all shrink-0">
+                            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground group-hover:text-primary transition-colors" />
                         </Button>
                     </Link>
-                    <div>
-                        <div className="flex items-center gap-3 mb-1">
-                            <h2 className="text-2xl font-black tracking-tighter text-foreground italic uppercase">Lab: {flow.name}</h2>
-                            <span className={`px-3 py-0.5 rounded-full text-[9px] font-black border tracking-widest uppercase ${flow.isActive ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
-                                {flow.isActive ? 'Live System' : 'Draft'}
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2 md:gap-3 mb-1">
+                            <h2 className="text-xl md:text-2xl font-black tracking-tighter text-foreground italic uppercase truncate">Lab: {flow.name}</h2>
+                            <span className={`px-2 py-0.5 rounded-full text-[8px] md:text-[9px] font-black border tracking-widest uppercase shrink-0 ${flow.isActive ? 'bg-green-500/10 text-green-600 border-green-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
+                                {flow.isActive ? 'Live' : 'Draft'}
                             </span>
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40">Visual Logic Architect</p>
+                        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 hidden sm:block">Visual Logic Architect</p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 md:gap-6 w-full sm:w-auto justify-between sm:justify-end">
                     <Dialog open={isResetOpen} onOpenChange={setIsResetOpen}>
                         <DialogTrigger asChild>
-                            <Button variant="ghost" className="h-14 px-6 rounded-2xl bg-destructive/5 text-destructive hover:bg-destructive/10 border border-destructive/10 transition-all flex items-center gap-2">
+                            <Button variant="ghost" className="h-10 md:h-14 px-3 md:px-6 rounded-xl md:rounded-2xl bg-destructive/5 text-destructive hover:bg-destructive/10 border border-destructive/10 transition-all flex items-center gap-2">
                                 <RotateCcw className="w-4 h-4" />
-                                <span className="text-[10px] font-black uppercase tracking-widest">Reset Lab</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Reset Lab</span>
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="bg-white border-none rounded-[3rem] p-12 max-w-md shadow-2xl">
@@ -249,14 +249,14 @@ export default function FlowEditor({ flow }: { flow: any }) {
                         </DialogContent>
                     </Dialog>
 
-                    <div className="flex items-center gap-2 px-6 h-14 bg-secondary/30 rounded-2xl border border-border/50">
+                    <div className="flex items-center gap-2 px-3 md:px-6 h-10 md:h-14 bg-secondary/30 rounded-xl md:rounded-2xl border border-border/50">
                         <div className="w-2 h-2 rounded-full bg-green-500 shadow-glow animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Auto-sync Active</span>
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 hidden md:inline">Auto-sync Active</span>
                     </div>
                     <Button
                         onClick={onSave}
                         disabled={isSaving}
-                        className="h-14 px-10 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow transition-all active:scale-95 flex items-center gap-3"
+                        className="h-10 md:h-14 px-4 md:px-10 rounded-xl md:rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow transition-all active:scale-95 flex items-center gap-2 md:gap-3"
                     >
                         {isSaving ? (
                             <div className="flex items-center gap-3">
@@ -265,20 +265,20 @@ export default function FlowEditor({ flow }: { flow: any }) {
                             </div>
                         ) : (
                             <>
-                                <Save className="w-5 h-5" />
-                                Commit Changes
+                                <Save className="w-4 h-4 md:w-5 md:h-5" />
+                                <span className="hidden sm:inline">Commit</span>
                             </>
                         )}
                     </Button>
                 </div>
             </header>
 
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden pb-28 md:pb-0">
                 {/* Visual Palette Sidebar */}
-                <aside className="w-96 bg-white/40 backdrop-blur-3xl border-r border-border p-10 flex flex-col gap-10 shrink-0 overflow-y-auto z-10">
+                <aside className="w-full md:w-96 h-48 md:h-auto bg-white/40 backdrop-blur-3xl border-b md:border-b-0 md:border-r border-border p-4 md:p-10 flex flex-col md:gap-10 shrink-0 overflow-y-auto z-10 custom-scrollbar">
                     <div>
-                        <h3 className="text-sm font-black uppercase tracking-[0.4em] text-muted-foreground mb-8 opacity-40 italic">Logic Components</h3>
-                        <div className="space-y-6">
+                        <h3 className="text-[10px] md:text-sm font-black uppercase tracking-[0.4em] text-muted-foreground mb-4 md:mb-8 opacity-40 italic">Logic Components</h3>
+                        <div className="flex flex-row md:flex-col gap-3 md:gap-6 overflow-x-auto md:overflow-hidden pb-2 md:pb-0 custom-scrollbar">
                             <PaletteItem
                                 icon={<MessageCircle className="w-5 h-5" />}
                                 title="Message Block"
@@ -306,7 +306,7 @@ export default function FlowEditor({ flow }: { flow: any }) {
                         </div>
                     </div>
 
-                    <div className="mt-auto">
+                    <div className="mt-auto hidden md:block">
                         <div className="p-8 bg-primary/5 rounded-[2.5rem] border border-primary/10 space-y-4">
                             <div className="flex items-center gap-3">
                                 <Zap className="w-5 h-5 text-primary fill-primary/20" />
@@ -379,15 +379,15 @@ function PaletteItem({ icon, title, description, type, color, onDragStart }: any
         <div
             draggable
             onDragStart={(e) => onDragStart(e, type)}
-            className="group cursor-grab active:cursor-grabbing p-6 bg-white/60 border border-border rounded-[2rem] hover:shadow-glow-soft hover:border-primary/30 transition-all duration-500"
+            className="group cursor-grab active:cursor-grabbing p-4 md:p-6 bg-white/60 border border-border rounded-xl md:rounded-[2rem] hover:shadow-glow-soft hover:border-primary/30 transition-all duration-500 w-48 md:w-auto shrink-0 flex flex-col"
         >
-            <div className="flex items-center gap-4 mb-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${colorClasses[color]}`}>
+            <div className="flex items-center gap-3 md:gap-4 mb-2 md:mb-3">
+                <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center border shrink-0 ${colorClasses[color]}`}>
                     {icon}
                 </div>
-                <h4 className="font-black text-[13px] uppercase tracking-wider text-foreground">{title}</h4>
+                <h4 className="font-black text-[10px] md:text-[13px] uppercase tracking-wider text-foreground leading-tight">{title}</h4>
             </div>
-            <p className="text-[11px] font-bold text-muted-foreground/60 leading-tight italic ml-4">
+            <p className="text-[9px] md:text-[11px] font-bold text-muted-foreground/60 leading-tight italic ml-1 md:ml-4 flex-1">
                 {description}
             </p>
         </div>
