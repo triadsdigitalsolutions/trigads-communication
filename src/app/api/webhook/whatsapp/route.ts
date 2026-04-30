@@ -117,6 +117,11 @@ async function processWebhook(body: any) {
                                 console.error('[Webhook] Flow Engine Error:', err);
                             });
                         }
+
+                        // 4. Activate any "after_message" schedules for this contact
+                        triggerAfterMessageSchedules(contactId).catch(err => {
+                            console.error('[Webhook] Scheduler trigger error:', err);
+                        });
                     }
                 }
 
@@ -140,5 +145,21 @@ async function processWebhook(body: any) {
                 }
             }
         }
+    }
+}
+
+/** When an incoming message arrives, set scheduledAt on any waiting after_message schedules for this contact */
+async function triggerAfterMessageSchedules(contactId: string) {
+    const q = query(
+        collection(db, "scheduled_messages"),
+        where("contactId", "==", contactId),
+        where("scheduleMode", "==", "after_message"),
+        where("status", "==", "PENDING")
+    );
+    const snap = await getDocs(q);
+    for (const d of snap.docs) {
+        const delayMins = (d.data().afterMessageDelayMinutes as number) || 0;
+        const scheduledAt = new Date(Date.now() + delayMins * 60 * 1000).toISOString();
+        await updateDoc(d.ref, { scheduledAt });
     }
 }

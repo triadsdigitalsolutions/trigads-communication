@@ -437,3 +437,105 @@ export async function sendBulkTemplateAction(
     revalidatePath("/dashboard/chat");
     return { results };
 }
+
+// ─────────────────────────────────────────────────────────
+// SCHEDULER ACTIONS
+// ─────────────────────────────────────────────────────────
+
+export type ScheduleMode = "delay" | "fixed" | "after_message";
+export type MessageType  = "text" | "template";
+
+export interface CreateSchedulePayload {
+    contactId: string;
+    type: MessageType;
+    messageText?: string;
+    templateName?: string;
+    templateParameters?: string[];
+    scheduleMode: ScheduleMode;
+    // delay mode
+    delayValue?: number;        // numeric amount
+    delayUnit?: "minutes" | "hours";
+    // fixed mode
+    fixedDatetime?: string;     // ISO string
+    // after_message mode
+    afterMessageDelayMinutes?: number;
+}
+
+export async function createScheduledMessageAction(payload: CreateSchedulePayload) {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+
+    try {
+        const contactSnap = await getDoc(doc(db, "contacts", payload.contactId));
+        if (!contactSnap.exists()) throw new Error("Contact not found");
+        const contact = contactSnap.data() as any;
+
+        // Compute scheduledAt for delay and fixed modes
+        let scheduledAt: string | null = null;
+        if (payload.scheduleMode === "delay") {
+            const mins = payload.delayUnit === "hours"
+                ? (payload.delayValue || 1) * 60
+                : (payload.delayValue || 30);
+            scheduledAt = new Date(Date.now() + mins * 60 * 1000).toISOString();
+        } else if (payload.scheduleMode === "fixed") {
+            if (!payload.fixedDatetime) throw new Error("Fixed datetime is required");
+            scheduledAt = new Date(payload.fixedDatetime).toISOString();
+            if (scheduledAt < new Date().toISOString()) throw new Error("Scheduled time is in the past");
+        }
+        // after_message: scheduledAt stays null until webhook triggers it
+
+        const newRef = doc(collection(db, "scheduled_messages"));
+        await setDoc(newRef, {
+            contactId:               payload.contactId,
+            contactName:             contact.name || "Unknown",
+            contactPhone:            contact.phone,
+            type:                    payload.type,
+            messageText:             payload.messageText || null,
+            templateName:            payload.templateName || null,
+            templateParameters:      payload.templateParameters || [],
+            scheduleMode:            payload.scheduleMode,
+            scheduledAt,
+            delayValue:              payload.delayValue || null,
+            delayUnit:               payload.delayUnit || null,
+            afterMessageDelayMinutes: payload.afterMessageDelayMinutes || null,
+            status:                  "PENDING",
+            createdBy:               (session.user as any).id,
+            createdAt:               new Date().toISOString(),
+        });
+
+        revalidatePath("/dashboard/scheduler");
+        return { success: true, id: newRef.id };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function cancelScheduledMessageAction(id: string) {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+
+    try {
+        await updateDoc(doc(db, "scheduled_messages", id), { status: "CANCELLED" });
+        revalidatePath("/dashboard/scheduler");
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getScheduledMessagesAction() {
+    const session = await auth();
+    if (!session?.user) return { success: false as const, error: "Unauthorized", schedules: [] };
+
+    try {
+        const snap = await getDocs(collection(db, "scheduled_messages"));
+        const schedules = snap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a: any, b: any) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+        return { success: true as const, schedules };
+    } catch (error: any) {
+        return { success: false as const, error: error.message, schedules: [] };
+    }
+}

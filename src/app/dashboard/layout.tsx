@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Layout, LogOut, Zap, BookUser, Radio, Users } from "lucide-react";
+import { MessageSquare, Layout, LogOut, Zap, BookUser, Radio, Users, CalendarClock } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NavItem } from "./NavItem";
@@ -36,6 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                     <NavItem href="/dashboard/flows"     icon={<Zap           className="w-5 h-5" />} label="Flows" />
                     <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-5 h-5" />} label="Contacts" />
                     <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-5 h-5" />} label="Bulk" />
+                    <NavItem href="/dashboard/scheduler" icon={<CalendarClock className="w-5 h-5" />} label="Scheduler" />
                     {role === "ADMIN" && (
                         <NavItem href="/dashboard/admin/users" icon={<Users className="w-5 h-5" />} label="Agents" />
                     )}
@@ -89,6 +90,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 <NavItem href="/dashboard/flows"     icon={<Zap           className="w-5 h-5" />} label="Flows" mobile />
                 <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-5 h-5" />} label="Contacts" mobile />
                 <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-5 h-5" />} label="Bulk" mobile />
+                <NavItem href="/dashboard/scheduler" icon={<CalendarClock className="w-5 h-5" />} label="Scheduler" mobile />
                 {/* Mobile signout */}
                 <form action={async () => { "use server"; await signOut(); }}>
                     <button type="submit" className="w-12 h-12 rounded-full flex items-center justify-center text-sidebar-foreground/40 hover:text-red-400 transition-colors">
