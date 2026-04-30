@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Layout, Settings, Users, BarChart3, LogOut, Zap } from "lucide-react";
+import { MessageSquare, Layout, Settings, Users, BarChart3, LogOut, Zap, BookUser, Radio } from "lucide-react";
 import { auth, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -27,6 +27,8 @@ export default async function DashboardLayout({
                     <NavItem href="/dashboard/chat" icon={<MessageSquare className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Chat" />
                     <NavItem href="/dashboard/templates" icon={<Layout className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Templates" />
                     <NavItem href="/dashboard/flows" icon={<Zap className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Flows" />
+                    <NavItem href="/dashboard/contacts" icon={<BookUser className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Contacts" />
+                    <NavItem href="/dashboard/bulk" icon={<Radio className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Bulk" />
 
                     {role === 'ADMIN' && (
                         <>

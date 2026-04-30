@@ -315,3 +315,125 @@ export async function deleteTemplateAction(templateId: string) {
         return { success: false, error: error.message || "Unknown error occurred" };
     }
 }
+
+export async function updateContactAction(contactId: string, data: { name: string; phone: string }) {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+
+    try {
+        const cleanPhone = data.phone.replace(/\D/g, "");
+        if (cleanPhone.length < 10) throw new Error("Invalid phone number format");
+
+        // Check if another contact already has this phone
+        const q = query(collection(db, "contacts"), where("phone", "==", cleanPhone));
+        const existingSnap = await getDocs(q);
+        const conflict = existingSnap.docs.find(d => d.id !== contactId);
+        if (conflict) return { success: false, error: "Another contact with this phone number already exists" };
+
+        await updateDoc(doc(db, "contacts", contactId), {
+            name: data.name,
+            phone: cleanPhone,
+            updatedAt: new Date().toISOString(),
+        });
+
+        revalidatePath("/dashboard/contacts");
+        revalidatePath("/dashboard/chat");
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function deleteContactAction(contactId: string) {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+
+    try {
+        // Delete all messages for this contact
+        const msgsQ = query(collection(db, "messages"), where("contactId", "==", contactId));
+        const msgsSnap = await getDocs(msgsQ);
+        await Promise.all(msgsSnap.docs.map(d => deleteDoc(d.ref)));
+
+        // Delete the contact itself
+        await deleteDoc(doc(db, "contacts", contactId));
+
+        revalidatePath("/dashboard/contacts");
+        revalidatePath("/dashboard/chat");
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, error: error.message };
+    }
+}
+
+export async function getContactsAction() {
+    const session = await auth();
+    if (!session?.user) return { success: false as const, error: "Unauthorized", contacts: [] };
+
+    try {
+        const snap = await getDocs(collection(db, "contacts"));
+        const contacts = snap.docs.map(d => ({ id: d.id, ...d.data() })) as any[];
+        contacts.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        return { success: true as const, contacts };
+    } catch (error: any) {
+        return { success: false as const, error: error.message, contacts: [] };
+    }
+}
+
+export async function sendBulkTemplateAction(
+    contactIds: string[],
+    templateName: string,
+    parametersMap: Record<string, string[]>   // contactId -> parameters array
+): Promise<{ results: { contactId: string; name: string; success: boolean; error?: string }[] }> {
+    const session = await auth();
+    if (!session?.user) return { results: [] };
+
+    // Fetch template once
+    const tQuery = query(collection(db, "templates"), where("name", "==", templateName));
+    const tSnap = await getDocs(tQuery);
+    if (tSnap.empty) return { results: contactIds.map(id => ({ contactId: id, name: id, success: false, error: "Template not found" })) };
+    const template = { id: tSnap.docs[0].id, ...tSnap.docs[0].data() } as any;
+
+    const results: { contactId: string; name: string; success: boolean; error?: string }[] = [];
+
+    for (const contactId of contactIds) {
+        try {
+            const contactSnap = await getDoc(doc(db, "contacts", contactId));
+            if (!contactSnap.exists()) {
+                results.push({ contactId, name: contactId, success: false, error: "Contact not found" });
+                continue;
+            }
+            const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
+            const parameters = parametersMap[contactId] || [];
+
+            let bodyText = (template.components as any[]).find(c => c.type === 'BODY')?.text || "Template Message";
+            parameters.forEach((val, idx) => { bodyText = bodyText.replace(`{{${idx + 1}}}`, val); });
+
+            const messageRef = doc(collection(db, "messages"));
+            await setDoc(messageRef, {
+                contactId: contact.id,
+                senderId: (session.user as any).id,
+                direction: "OUTGOING",
+                type: "template",
+                content: { templateName, body: bodyText, parameters },
+                status: "SENT",
+                createdAt: new Date().toISOString(),
+            });
+
+            try {
+                const { sendTemplate } = await import("@/lib/whatsapp");
+                const response = await sendTemplate(contact.phone, templateName, template.language, parameters);
+                const metaMessageId = response.messages?.[0]?.id;
+                await updateDoc(messageRef, { status: "SENT", metaMessageId });
+                results.push({ contactId, name: contact.name || contact.phone, success: true });
+            } catch (apiError: any) {
+                await updateDoc(messageRef, { status: "FAILED", content: { templateName, body: bodyText, parameters, error: apiError.message } });
+                results.push({ contactId, name: contact.name || contact.phone, success: false, error: apiError.message });
+            }
+        } catch (error: any) {
+            results.push({ contactId, name: contactId, success: false, error: error.message });
+        }
+    }
+
+    revalidatePath("/dashboard/chat");
+    return { results };
+}
