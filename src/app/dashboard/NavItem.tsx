@@ -4,26 +4,63 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-export function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+interface NavItemProps {
+    href: string;
+    icon: React.ReactNode;
+    label: string;
+    mobile?: boolean;
+}
+
+export function NavItem({ href, icon, label, mobile }: NavItemProps) {
     const pathname = usePathname();
-    const isActive = pathname === href || pathname.startsWith(href + '/');
+    const isActive = pathname === href || pathname.startsWith(href + "/");
+
+    if (mobile) {
+        return (
+            <Link
+                href={href}
+                title={label}
+                className={`relative flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 ${
+                    isActive
+                        ? "text-primary bg-primary/15"
+                        : "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                }`}
+            >
+                {isActive && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-primary" />
+                )}
+                {icon}
+            </Link>
+        );
+    }
 
     return (
         <Link
             href={href}
-            className={`group relative flex flex-col items-center justify-center transition-all duration-500 md:gap-1 h-[3.25rem] ${
-                isActive ? 'w-20 md:w-12 bg-foreground/10 md:bg-transparent rounded-full' : 'w-12 md:w-12'
+            title={label}
+            className={`group relative flex flex-col items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 ${
+                isActive
+                    ? "bg-primary/20 text-primary"
+                    : "text-sidebar-foreground/40 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             }`}
         >
-            <div className={`w-8 h-8 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${
-                isActive 
-                    ? 'text-foreground md:bg-primary/10' 
-                    : 'text-muted-foreground group-hover:text-foreground md:group-hover:bg-primary/10'
-            }`}>
-                {icon}
-            </div>
-            <span className="hidden md:block text-[10px] font-bold uppercase tracking-widest text-muted-foreground/0 group-hover:text-muted-foreground transition-all duration-300 text-center">
+            {/* Active indicator bar */}
+            {isActive && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-6 bg-primary rounded-r-full" />
+            )}
+            {icon}
+            {/* Label tooltip on hover */}
+            <span className="
+                absolute left-full ml-3 px-2.5 py-1
+                bg-sidebar-accent border border-sidebar-border
+                text-[10px] font-black uppercase tracking-widest text-sidebar-foreground
+                rounded-lg whitespace-nowrap shadow-elevated
+                opacity-0 invisible pointer-events-none
+                group-hover:opacity-100 group-hover:visible
+                transition-all duration-150 z-50
+            ">
                 {label}
+                <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-sidebar-border" />
             </span>
         </Link>
     );

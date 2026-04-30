@@ -48,74 +48,81 @@
 }
 
 :root {
-  --radius: 1.25rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2 0.02 135);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 135);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 135);
-  --primary: oklch(0.6 0.18 145);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.96 0.02 145);
-  --secondary-foreground: oklch(0.3 0.05 145);
-  --muted: oklch(0.98 0.01 145);
-  --muted-foreground: oklch(0.4 0.03 145);
-  --accent: oklch(0.92 0.04 145);
-  --accent-foreground: oklch(0.2 0.1 145);
-  --destructive: oklch(0.6 0.2 20);
-  --border: oklch(0.9 0.02 145);
-  --input: oklch(0.9 0.02 145);
-  --ring: oklch(0.6 0.18 145 / 40%);
-  --sidebar: oklch(0.98 0.01 145);
-  --sidebar-foreground: oklch(0.2 0.02 145);
-  --sidebar-primary: oklch(0.6 0.18 145);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.03 145);
-  --sidebar-accent-foreground: oklch(0.2 0.1 145);
-  --sidebar-border: oklch(0.92 0.02 145);
-  --sidebar-ring: oklch(0.6 0.18 145 / 40%);
+  --radius: 1rem;
 
-  /* Elevation Shadows */
-  --shadow-elevated: 0 10px 40px -10px rgb(0 0 0 / 0.1), 0 4px 12px -2px rgb(0 0 0 / 0.05);
-  --shadow-glow: 0 0 25px -5px oklch(0.6 0.18 145 / 20%);
-}
+  /* ── Core Palette ───────────────────────────── */
+  --background:    oklch(0.985 0.005 145);
+  --foreground:    oklch(0.16 0.025 145);
 
-.dark {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.2 0.02 135);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.02 135);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.02 135);
-  --primary: oklch(0.6 0.18 145);
+  --card:          oklch(1 0 0);
+  --card-foreground: oklch(0.16 0.025 145);
+
+  --popover:       oklch(1 0 0);
+  --popover-foreground: oklch(0.16 0.025 145);
+
+  /* Emerald-green brand primary */
+  --primary:       oklch(0.52 0.17 155);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.96 0.02 145);
-  --secondary-foreground: oklch(0.3 0.05 145);
-  --muted: oklch(0.98 0.01 145);
-  --muted-foreground: oklch(0.4 0.03 145);
-  --accent: oklch(0.92 0.04 145);
-  --accent-foreground: oklch(0.2 0.1 145);
-  --destructive: oklch(0.5 0.2 25);
-  --border: oklch(0.9 0.02 145);
-  --input: oklch(0.9 0.02 145);
-  --ring: oklch(0.6 0.18 145 / 40%);
-  --sidebar: oklch(0.98 0.01 145);
-  --sidebar-foreground: oklch(0.2 0.02 145);
-  --sidebar-primary: oklch(0.6 0.18 145);
+
+  --secondary:     oklch(0.96 0.015 150);
+  --secondary-foreground: oklch(0.3 0.06 150);
+
+  --muted:         oklch(0.97 0.008 150);
+  --muted-foreground: oklch(0.48 0.04 150);
+
+  --accent:        oklch(0.94 0.03 150);
+  --accent-foreground: oklch(0.22 0.08 150);
+
+  --destructive:   oklch(0.57 0.22 22);
+
+  --border:        oklch(0.91 0.015 150);
+  --input:         oklch(0.93 0.012 150);
+  --ring:          oklch(0.52 0.17 155 / 35%);
+
+  /* ── Sidebar ────────────────────────────────── */
+  --sidebar:              oklch(0.13 0.02 155);
+  --sidebar-foreground:   oklch(0.85 0.04 150);
+  --sidebar-primary:      oklch(0.52 0.17 155);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.94 0.03 145);
-  --sidebar-accent-foreground: oklch(0.2 0.1 145);
-  --sidebar-border: oklch(0.92 0.02 145);
-  --sidebar-ring: oklch(0.6 0.18 145 / 40%);
+  --sidebar-accent:       oklch(0.20 0.03 155);
+  --sidebar-accent-foreground: oklch(0.92 0.03 150);
+  --sidebar-border:       oklch(0.22 0.025 155);
+  --sidebar-ring:         oklch(0.52 0.17 155 / 35%);
+
+  /* ── Elevation & Glow ───────────────────────── */
+  --shadow-card:    0 1px 3px rgb(0 0 0 / 0.06), 0 4px 16px -4px rgb(0 0 0 / 0.08);
+  --shadow-elevated: 0 8px 32px -8px rgb(0 0 0 / 0.14), 0 2px 8px -2px rgb(0 0 0 / 0.06);
+  --shadow-glow:    0 0 30px -6px oklch(0.52 0.17 155 / 30%);
+  --shadow-sidebar: 4px 0 24px -8px rgb(0 0 0 / 0.35);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar        { width: 4px; height: 4px; }
+.custom-scrollbar::-webkit-scrollbar-track  { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb  { background: oklch(0.7 0.04 150); border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: oklch(0.52 0.17 155); }
+
+/* ── Utility shadows (referenced by Tailwind classes in JSX) ── */
+.shadow-card     { box-shadow: var(--shadow-card); }
+.shadow-elevated { box-shadow: var(--shadow-elevated); }
+.shadow-glow     { box-shadow: var(--shadow-glow); }
+.shadow-sidebar  { box-shadow: var(--shadow-sidebar); }
+
+/* ── Subtle mesh gradient for login/hero backgrounds ── */
+.bg-mesh {
+  background-color: oklch(0.985 0.005 145);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 10% 0%, oklch(0.52 0.17 155 / 10%) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, oklch(0.52 0.17 155 / 7%) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 50% 50%, oklch(0.52 0.17 155 / 4%) 0%, transparent 100%);
 }

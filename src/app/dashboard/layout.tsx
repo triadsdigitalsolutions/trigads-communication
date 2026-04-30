@@ -1,89 +1,101 @@
 import Link from "next/link";
-import { MessageSquare, Layout, Settings, Users, BarChart3, LogOut, Zap, BookUser, Radio } from "lucide-react";
+import { MessageSquare, Layout, LogOut, Zap, BookUser, Radio, Users } from "lucide-react";
 import { auth, signOut } from "@/auth";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { NavItem } from "./NavItem";
 
-export default async function DashboardLayout({
-    children,
-}: {
-    children: React.ReactNode;
-}) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
     const session = await auth();
     const role = (session?.user as any)?.role;
+    const name = session?.user?.name || "User";
+    const initials = name.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
 
     return (
-        <div className="flex flex-col-reverse md:flex-row h-screen md:h-screen w-full overflow-hidden bg-background">
-            {/* Sidebar / Bottom navigation */}
-            <aside className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-sm shrink-0 h-[4.5rem] bg-foreground/5 backdrop-blur-2xl border border-foreground/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_rgba(255,255,255,0.05)] flex flex-row items-center justify-around px-3 z-50 transition-all duration-500 ease-in-out md:relative md:bottom-auto md:left-auto md:translate-x-0 md:w-24 md:h-auto md:max-w-none md:bg-sidebar md:backdrop-blur-none md:border-0 md:border-r md:border-border md:rounded-none md:shadow-none md:flex-col md:justify-between md:px-0 md:py-8">
-                <div className="hidden md:block mb-12">
-                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-primary-foreground font-black text-xl shadow-lg shadow-primary/20 rotate-3 transform hover:rotate-6 transition-transform">
-                        P
-                    </div>
+        <div className="flex h-screen w-full overflow-hidden bg-background">
+
+            {/* ── Desktop Sidebar ─────────────────────────────────── */}
+            <aside className="
+                hidden md:flex flex-col
+                w-[72px] shrink-0 h-screen
+                bg-sidebar border-r border-sidebar-border
+                shadow-sidebar
+            ">
+                {/* Logo mark */}
+                <div className="flex items-center justify-center h-[72px] shrink-0 border-b border-sidebar-border">
+                    <Link href="/dashboard/chat" className="group">
+                        <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-white font-black text-lg shadow-glow group-hover:scale-110 transition-transform">
+                            P
+                        </div>
+                    </Link>
                 </div>
 
-                <nav className="flex flex-row w-full justify-around items-center h-full md:flex-col md:flex-1 md:justify-start md:space-y-8 md:h-auto">
-                    <NavItem href="/dashboard/chat" icon={<MessageSquare className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Chat" />
-                    <NavItem href="/dashboard/templates" icon={<Layout className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Templates" />
-                    <NavItem href="/dashboard/flows" icon={<Zap className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Flows" />
-                    <NavItem href="/dashboard/contacts" icon={<BookUser className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Contacts" />
-                    <NavItem href="/dashboard/bulk" icon={<Radio className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Bulk" />
-
-                    {role === 'ADMIN' && (
-                        <>
-                            <NavItem href="/dashboard/admin/users" icon={<Users className="w-[1.2rem] h-[1.2rem] md:w-6 md:h-6" />} label="Agents" />
-                        </>
+                {/* Nav links */}
+                <nav className="flex flex-col items-center gap-1 py-4 flex-1 overflow-y-auto custom-scrollbar">
+                    <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-5 h-5" />} label="Chat" />
+                    <NavItem href="/dashboard/templates" icon={<Layout        className="w-5 h-5" />} label="Templates" />
+                    <NavItem href="/dashboard/flows"     icon={<Zap           className="w-5 h-5" />} label="Flows" />
+                    <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-5 h-5" />} label="Contacts" />
+                    <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-5 h-5" />} label="Bulk" />
+                    {role === "ADMIN" && (
+                        <NavItem href="/dashboard/admin/users" icon={<Users className="w-5 h-5" />} label="Agents" />
                     )}
-
-                    {/* Mobile LogOut */}
-                    <div className="md:hidden flex items-center justify-center h-full">
-                         <form action={async () => {
-                            "use server";
-                            await signOut();
-                         }}>
-                            <button type="submit" className="group relative flex flex-col items-center justify-center transition-all duration-500 h-[3.25rem] w-12 rounded-full">
-                                <div className="w-8 h-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                                    <LogOut className="w-[1.2rem] h-[1.2rem]" />
-                                </div>
-                            </button>
-                        </form>
-                    </div>
                 </nav>
 
-                <div className="hidden md:flex mt-auto flex-col items-center gap-6">
+                {/* User + signout */}
+                <div className="flex flex-col items-center gap-3 py-4 border-t border-sidebar-border shrink-0">
+                    {/* Avatar with tooltip */}
                     <div className="group relative">
-                        <Avatar className="h-12 w-12 rounded-2xl border-2 border-primary/20 shadow-premium transition-all duration-300 group-hover:border-primary group-hover:scale-110 cursor-pointer">
-                            <AvatarFallback className="bg-primary/5 text-primary text-xs font-black uppercase">
-                                {session?.user?.name?.[0] || 'U'}
+                        <Avatar className="w-9 h-9 rounded-xl ring-2 ring-sidebar-border group-hover:ring-primary/60 transition-all cursor-pointer">
+                            <AvatarFallback className="bg-primary/20 text-primary text-xs font-black rounded-xl">
+                                {initials}
                             </AvatarFallback>
                         </Avatar>
-
-                        {/* Profile Tooltip/Popover */}
-                        <div className="absolute left-full ml-4 top-1/2 -translate-y-1/2 bg-white border border-border rounded-2xl p-4 shadow-elevated opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 min-w-[160px]">
-                            <p className="text-sm font-black text-foreground truncate">{session?.user?.name || 'User'}</p>
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-1">{role || 'Agent'}</p>
-                            <div className="absolute left-[-6px] top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-l border-b border-border rotate-45" />
+                        {/* Tooltip */}
+                        <div className="absolute left-full ml-3 bottom-0 bg-sidebar-accent border border-sidebar-border rounded-xl px-3 py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 whitespace-nowrap shadow-elevated">
+                            <p className="text-xs font-black text-sidebar-foreground">{name}</p>
+                            <p className="text-[10px] font-black uppercase tracking-widest text-primary/70 mt-0.5">{role || "Agent"}</p>
+                            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-sidebar-border" />
                         </div>
                     </div>
 
-                    <form action={async () => {
-                        "use server";
-                        await signOut();
-                    }}>
-                        <Button variant="ghost" size="icon" className="w-12 h-12 rounded-2xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all">
-                            <LogOut className="w-6 h-6" />
-                        </Button>
+                    <form action={async () => { "use server"; await signOut(); }}>
+                        <button
+                            type="submit"
+                            title="Sign out"
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-sidebar-foreground/40 hover:text-red-400 hover:bg-red-400/10 transition-all"
+                        >
+                            <LogOut className="w-4 h-4" />
+                        </button>
                     </form>
                 </div>
             </aside>
 
-            {/* Main content area */}
-            <main className="flex-1 relative overflow-y-auto overflow-x-hidden bg-background pb-32 md:pb-0 pt-0 custom-scrollbar">
-                {children}
-            </main>
+            {/* ── Main content ───────────────────────────────────── */}
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar pb-24 md:pb-0">
+                    {children}
+                </main>
+            </div>
+
+            {/* ── Mobile bottom nav ──────────────────────────────── */}
+            <nav className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-50
+                flex items-center gap-1 px-3 h-16
+                bg-sidebar/95 backdrop-blur-2xl
+                border border-sidebar-border rounded-full
+                shadow-elevated"
+            >
+                <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-5 h-5" />} label="Chat" mobile />
+                <NavItem href="/dashboard/templates" icon={<Layout        className="w-5 h-5" />} label="Templates" mobile />
+                <NavItem href="/dashboard/flows"     icon={<Zap           className="w-5 h-5" />} label="Flows" mobile />
+                <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-5 h-5" />} label="Contacts" mobile />
+                <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-5 h-5" />} label="Bulk" mobile />
+                {/* Mobile signout */}
+                <form action={async () => { "use server"; await signOut(); }}>
+                    <button type="submit" className="w-12 h-12 rounded-full flex items-center justify-center text-sidebar-foreground/40 hover:text-red-400 transition-colors">
+                        <LogOut className="w-5 h-5" />
+                    </button>
+                </form>
+            </nav>
         </div>
     );
 }
-
-
