@@ -159,8 +159,17 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                                 ].map(({ label, field, placeholder }) => (
                                     <div key={field} className="col-span-3 space-y-1.5">
                                         <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">{label}</label>
-                                        <Input value={(formData as any)[field]} onChange={e => setFormData(f => ({ ...f, [field]: e.target.value }))}
-                                            placeholder={placeholder} className="h-11 bg-secondary/50 border-none rounded-xl px-4 font-medium" />
+                                        <Input value={(formData as any)[field]}
+                                            onChange={e => {
+                                                // Meta rule: lowercase + underscores only
+                                                const sanitized = e.target.value
+                                                    .toLowerCase()
+                                                    .replace(/\s+/g, "_")
+                                                    .replace(/[^a-z0-9_]/g, "");
+                                                setFormData(f => ({ ...f, [field]: sanitized }));
+                                            }}
+                                            placeholder={placeholder} className="h-11 bg-secondary/50 border-none rounded-xl px-4 font-medium font-mono" />
+                                        <p className="text-[10px] text-amber-600/70 font-bold">⚠ Lowercase letters, numbers and underscores only (Meta requirement)</p>
                                     </div>
                                 ))}
                                 <div className="space-y-1.5">
