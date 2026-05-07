@@ -31,7 +31,8 @@ export async function GET(req: NextRequest) {
 
         const formattedMessages = messages.map((msg: any) => ({
             id: msg.id,
-            text: msg.content && typeof msg.content === 'object' && 'body' in msg.content ? msg.content.body : "Unknown content",
+            text: (msg.content && typeof msg.content === 'object') ? 
+                  (typeof msg.content.body === 'string' ? msg.content.body : msg.content.body?.text || "Interactive Message") : "Unknown content",
             error: msg.content && typeof msg.content === 'object' && 'error' in msg.content ? msg.content.error : null,
             time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             direction: msg.direction,
@@ -40,6 +41,7 @@ export async function GET(req: NextRequest) {
             mediaType: msg.content && typeof msg.content === 'object' ? msg.content.mediaType ?? null : null,
             mimeType: msg.content && typeof msg.content === 'object' ? msg.content.mimeType ?? null : null,
             mediaId: msg.content && typeof msg.content === 'object' ? msg.content.mediaId ?? null : null,
+            interactive: msg.type === 'interactive' && typeof msg.content === 'object' ? msg.content : null,
         }));
 
         return NextResponse.json(formattedMessages);

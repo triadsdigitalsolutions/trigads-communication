@@ -74,7 +74,7 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
         setIsSubmitting(true);
         const components: any[] = [];
         if (formData.headerType === "TEXT") components.push({ type: "HEADER", format: "TEXT", text: formData.headerText });
-        if (formData.headerType === "IMAGE") components.push({ type: "HEADER", format: "IMAGE", example: { header_handle: ["IMAGE_UPLOAD_PLACEHOLDER"] } });
+        if (formData.headerType === "IMAGE") components.push({ type: "HEADER", format: "IMAGE" });
         components.push({ type: "BODY", text: formData.body });
         if (formData.footer) components.push({ type: "FOOTER", text: formData.footer });
         if (formData.buttons.length) components.push({ type: "BUTTONS", buttons: formData.buttons });

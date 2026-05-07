@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft } from "lucide-react";
+import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft, List } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,7 @@ interface Message {
     mediaType?: "image" | "document" | "audio" | "video" | null;
     mimeType?: string | null;
     mediaId?: string | null;
+    interactive?: any;
 }
 
 /** Returns true if the WhatsApp 24-hour free messaging window is currently open */
@@ -779,6 +780,26 @@ export default function ChatClient({
                                                     ) : (
                                                         <p className="leading-relaxed">{msg.text}</p>
                                                     )}
+                                                    
+                                                    {msg.interactive && msg.interactive.type === 'button' && (
+                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
+                                                            {(msg.interactive.action?.buttons || []).map((btn: any, idx: number) => (
+                                                                <div key={idx} className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                                    {btn.reply?.title || 'Button'}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                    
+                                                    {msg.interactive && msg.interactive.type === 'list' && (
+                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
+                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                                <List className="w-4 h-4 inline-block mr-2" />
+                                                                {msg.interactive.action?.button || 'View List'}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {msg.status === "FAILED" && (
                                                         <div className="absolute -right-2 -top-2 bg-destructive text-white rounded-full p-1 shadow-lg">
                                                             <AlertCircle className="w-4 h-4" />
