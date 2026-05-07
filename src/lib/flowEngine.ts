@@ -1,6 +1,6 @@
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, updateDoc, setDoc, query, where, getDocs } from "firebase/firestore";
-import { sendText, sendTemplate } from "@/lib/whatsapp";
+import { sendText, sendTemplate, sendInteractive, sendMedia } from "@/lib/whatsapp";
 import { revalidatePath } from "next/cache";
 
 interface FlowDefinition {
@@ -142,18 +142,92 @@ async function executeMessageNode(contactId: string, data: any) {
     const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
 
     try {
+        let msgType = "text";
+        let content: any = {};
+
+        // Prepare optional media header for interactive messages
+        let header = undefined;
+        if (data.mediaUrl) {
+            header = {
+                type: "image",
+                image: { link: data.mediaUrl }
+            };
+        }
+
         if (data.mode === 'template') {
+            msgType = "template";
+            content = { body: data.templateName };
             await sendTemplate(contact.phone, data.templateName, "en_US", []);
+            
+        } else if (data.mode === 'interactive_button') {
+            msgType = "interactive";
+            const buttons = (data.buttons || []).filter((b: any) => b.title?.trim()).map((b: any, idx: number) => ({
+                type: "reply",
+                reply: {
+                    id: b.id || `btn_${idx}`,
+                    title: b.title
+                }
+            }));
+            
+            const interactiveObj: any = {
+                type: "button",
+                body: { text: data.text || "Please select an option:" },
+                action: { buttons }
+            };
+            if (header) interactiveObj.header = header;
+            content = interactiveObj;
+            
+            await sendInteractive(contact.phone, interactiveObj);
+            
+        } else if (data.mode === 'interactive_list') {
+            msgType = "interactive";
+            const sections = (data.sections || []).map((s: any) => ({
+                title: s.title || "Section",
+                rows: (s.rows || []).filter((r: any) => r.title?.trim()).map((r: any, idx: number) => ({
+                    id: r.id || `row_${idx}`,
+                    title: r.title,
+                    description: r.description || undefined
+                }))
+            }));
+            
+            const interactiveObj: any = {
+                type: "list",
+                body: { text: data.text || "Please select from the list:" },
+                action: {
+                    button: data.listButtonText || "View Menu",
+                    sections
+                }
+            };
+            if (header) interactiveObj.header = header;
+            content = interactiveObj;
+            
+            await sendInteractive(contact.phone, interactiveObj);
+            
+        } else if (data.mode === 'media_only' && data.mediaUrl) {
+            msgType = "image";
+            content = { body: data.text || "Image", mediaType: "image", link: data.mediaUrl };
+            await sendMedia(contact.phone, data.mediaUrl, "image", undefined, data.text);
+            
         } else {
-            await sendText(contact.phone, data.text || "Hello from Chatbot!");
+            // Fallback text
+            msgType = "text";
+            content = { body: data.text || "Hello from Chatbot!" };
+            // If they had a mediaUrl but no buttons, we can just send it as media
+            if (data.mediaUrl) {
+                msgType = "image";
+                content = { body: data.text, mediaType: "image", link: data.mediaUrl };
+                await sendMedia(contact.phone, data.mediaUrl, "image", undefined, data.text);
+            } else {
+                await sendText(contact.phone, data.text || "Hello from Chatbot!");
+            }
         }
 
         const msgRef = doc(collection(db, "messages"));
         await setDoc(msgRef, {
             contactId: contact.id,
             direction: "OUTGOING",
-            type: data.mode === 'template' ? "template" : "text",
-            content: { body: data.text || data.templateName },
+            type: msgType,
+            content: content,
             status: "SENT",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()

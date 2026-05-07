@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { X, MessageCircle, Clock, Split, Trash2, ArrowRight, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, MessageCircle, Clock, Split, Trash2, ArrowRight, Zap, Plus, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -15,9 +15,46 @@ interface PropertiesPanelProps {
 export default function PropertiesPanel({ node, templates, onChange, onClose }: PropertiesPanelProps) {
     const data = node.data;
 
+    const addListRow = (sectionIndex: number) => {
+        const sections = [...(data.sections || [{ title: "Menu", rows: [] }])];
+        sections[sectionIndex].rows.push({ id: `row_${Date.now()}`, title: "", description: "" });
+        onChange({ sections });
+    };
+
+    const updateListRow = (sectionIndex: number, rowIndex: number, field: string, val: string) => {
+        const sections = [...(data.sections || [])];
+        sections[sectionIndex].rows[rowIndex][field] = val;
+        onChange({ sections });
+    };
+
+    const removeListRow = (sectionIndex: number, rowIndex: number) => {
+        const sections = [...(data.sections || [])];
+        sections[sectionIndex].rows.splice(rowIndex, 1);
+        onChange({ sections });
+    };
+
+    const addButton = () => {
+        const buttons = [...(data.buttons || [])];
+        if (buttons.length >= 3) return;
+        buttons.push({ id: `btn_${Date.now()}`, title: "" });
+        onChange({ buttons });
+    };
+
+    const updateButton = (index: number, val: string) => {
+        const buttons = [...(data.buttons || [])];
+        buttons[index].title = val;
+        onChange({ buttons });
+    };
+
+    const removeButton = (index: number) => {
+        const buttons = [...(data.buttons || [])];
+        buttons.splice(index, 1);
+        onChange({ buttons });
+    };
+
     return (
-        <aside className="w-[400px] bg-white border-l border-border flex flex-col z-20 shadow-[-20px_0_50px_rgba(0,0,0,0.05)]">
-            <div className="h-24 px-8 flex items-center justify-between border-b border-border bg-secondary/5">
+        <aside className="w-[450px] bg-white border-l border-border flex flex-col z-20 shadow-[-20px_0_50px_rgba(0,0,0,0.05)]">
+            <div className="h-24 px-8 flex items-center justify-between border-b border-border bg-secondary/5 shrink-0">
                 <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${node.type === 'message' ? 'bg-blue-500/10 text-blue-600' :
                         node.type === 'wait' ? 'bg-amber-500/10 text-amber-600' :
@@ -27,6 +64,7 @@ export default function PropertiesPanel({ node, templates, onChange, onClose }: 
                         {node.type === 'message' && <MessageCircle className="w-5 h-5" />}
                         {node.type === 'wait' && <Clock className="w-5 h-5" />}
                         {node.type === 'condition' && <Split className="w-5 h-5" />}
+                        {node.type === 'start' && <Zap className="w-5 h-5" />}
                     </div>
                     <div>
                         <h3 className="text-sm font-black uppercase tracking-widest italic">{node.type} Configuration</h3>
@@ -38,7 +76,7 @@ export default function PropertiesPanel({ node, templates, onChange, onClose }: 
                 </Button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 space-y-10">
+            <div className="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
                 {/* Start Node Config */}
                 {node.type === 'start' && (
                     <div className="space-y-8">
@@ -88,20 +126,10 @@ export default function PropertiesPanel({ node, templates, onChange, onClose }: 
                         <div>
                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 mb-4 block italic">Transmission Protocol</label>
                             <div className="grid grid-cols-2 gap-2 p-1.5 bg-secondary/20 rounded-2xl border border-border/50">
-                                <button
-                                    onClick={() => onChange({ mode: 'text' })}
-                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${data.mode !== 'template' ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'
-                                        }`}
-                                >
-                                    Custom Text
-                                </button>
-                                <button
-                                    onClick={() => onChange({ mode: 'template' })}
-                                    className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${data.mode === 'template' ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'
-                                        }`}
-                                >
-                                    Meta Template
-                                </button>
+                                <button onClick={() => onChange({ mode: 'text' })} className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${(!data.mode || data.mode === 'text') ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}>Text</button>
+                                <button onClick={() => onChange({ mode: 'interactive_button' })} className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${data.mode === 'interactive_button' ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}>Buttons</button>
+                                <button onClick={() => onChange({ mode: 'interactive_list' })} className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${data.mode === 'interactive_list' ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}>List</button>
+                                <button onClick={() => onChange({ mode: 'template' })} className={`py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${data.mode === 'template' ? 'bg-white shadow-sm text-primary border border-border/50' : 'text-muted-foreground/50 hover:text-muted-foreground'}`}>Template</button>
                             </div>
                         </div>
 
@@ -113,14 +141,7 @@ export default function PropertiesPanel({ node, templates, onChange, onClose }: 
                                         <p className="text-xs font-bold text-muted-foreground italic">No Meta-approved templates found.</p>
                                     )}
                                     {templates.map((t) => (
-                                        <div
-                                            key={t.id}
-                                            onClick={() => onChange({ templateName: t.name, text: t.name })}
-                                            className={`p-4 rounded-2xl border cursor-pointer transition-all ${data.templateName === t.name
-                                                ? 'bg-primary/5 border-primary/40 ring-2 ring-primary/10'
-                                                : 'bg-white border-border hover:border-primary/20 hover:bg-secondary/5'
-                                                }`}
-                                        >
+                                        <div key={t.id} onClick={() => onChange({ templateName: t.name, text: t.name })} className={`p-4 rounded-2xl border cursor-pointer transition-all ${data.templateName === t.name ? 'bg-primary/5 border-primary/40 ring-2 ring-primary/10' : 'bg-white border-border hover:border-primary/20 hover:bg-secondary/5'}`}>
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-[11px] font-black tracking-tighter uppercase italic">{t.name}</span>
                                                 <span className="text-[9px] font-bold px-2 py-0.5 bg-secondary rounded-lg text-muted-foreground/70 uppercase">{t.category}</span>
@@ -133,15 +154,113 @@ export default function PropertiesPanel({ node, templates, onChange, onClose }: 
                                 </div>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 block italic">Payload Discovery</label>
-                                <textarea
-                                    value={data.text || ""}
-                                    onChange={(e) => onChange({ text: e.target.value })}
-                                    className="w-full h-40 p-6 bg-secondary/5 border-2 border-border/30 rounded-3xl outline-none focus:border-primary/20 transition-all text-sm font-bold text-foreground italic placeholder:text-muted-foreground/30 resize-none leading-relaxed"
-                                    placeholder="Engineer your automated message here..."
-                                />
-                            </div>
+                            <>
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 block italic">Body Content</label>
+                                    <textarea
+                                        value={data.text || ""}
+                                        onChange={(e) => onChange({ text: e.target.value })}
+                                        className="w-full h-32 p-4 bg-secondary/5 border-2 border-border/30 rounded-3xl outline-none focus:border-primary/20 transition-all text-sm font-bold text-foreground italic placeholder:text-muted-foreground/30 resize-none leading-relaxed"
+                                        placeholder="Enter the main message text here..."
+                                    />
+                                </div>
+                                
+                                <div className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 flex items-center gap-2 italic">
+                                        <ImageIcon className="w-3.5 h-3.5" /> Media Attachment URL (Optional)
+                                    </label>
+                                    <Input
+                                        value={data.mediaUrl || ""}
+                                        onChange={(e) => onChange({ mediaUrl: e.target.value })}
+                                        className="h-12 rounded-2xl border-2 border-border/30 bg-secondary/5 px-4 font-bold text-sm outline-none placeholder:text-muted-foreground/30"
+                                        placeholder="https://example.com/image.jpg"
+                                    />
+                                    {data.mediaUrl && (
+                                        <div className="h-32 w-full rounded-2xl border-2 border-border overflow-hidden bg-secondary/20 relative">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img src={data.mediaUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = 'https://placehold.co/600x400?text=Invalid+Image+URL'; }} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {data.mode === 'interactive_button' && (
+                                    <div className="space-y-4 pt-4 border-t border-border/50">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 block italic">Interactive Buttons (Max 3)</label>
+                                        <div className="space-y-3">
+                                            {(data.buttons || []).map((b: any, i: number) => (
+                                                <div key={b.id || i} className="flex gap-2">
+                                                    <Input
+                                                        value={b.title}
+                                                        onChange={(e) => updateButton(i, e.target.value)}
+                                                        placeholder={`Button ${i + 1} Text...`}
+                                                        className="flex-1 h-12 rounded-xl bg-white border-primary/20 font-bold"
+                                                        maxLength={20}
+                                                    />
+                                                    <Button variant="ghost" size="icon" onClick={() => removeButton(i)} className="h-12 w-12 rounded-xl text-destructive hover:bg-destructive/10 shrink-0">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            {(!data.buttons || data.buttons.length < 3) && (
+                                                <Button variant="outline" onClick={addButton} className="w-full h-12 rounded-xl border-dashed border-2 text-primary font-black uppercase text-xs">
+                                                    <Plus className="w-4 h-4 mr-2" /> Add Button
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {data.mode === 'interactive_list' && (
+                                    <div className="space-y-6 pt-4 border-t border-border/50">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 block italic">List Button Text</label>
+                                            <Input
+                                                value={data.listButtonText || ""}
+                                                onChange={(e) => onChange({ listButtonText: e.target.value })}
+                                                placeholder="e.g. View Menu"
+                                                className="h-12 rounded-xl bg-white border-primary/20 font-bold"
+                                                maxLength={20}
+                                            />
+                                        </div>
+
+                                        {(data.sections || [{ title: "Menu", rows: [] }]).map((section: any, sIdx: number) => (
+                                            <div key={sIdx} className="space-y-4 bg-secondary/10 p-4 rounded-3xl border border-border">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 italic">List Options</label>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    {(section.rows || []).map((r: any, rIdx: number) => (
+                                                        <div key={r.id || rIdx} className="bg-white p-3 rounded-2xl border shadow-sm space-y-2 relative group">
+                                                            <Input
+                                                                value={r.title}
+                                                                onChange={(e) => updateListRow(sIdx, rIdx, 'title', e.target.value)}
+                                                                placeholder="Option Title (required)"
+                                                                className="h-10 border-none bg-secondary/5 font-bold"
+                                                                maxLength={24}
+                                                            />
+                                                            <Input
+                                                                value={r.description || ""}
+                                                                onChange={(e) => updateListRow(sIdx, rIdx, 'description', e.target.value)}
+                                                                placeholder="Description (optional)"
+                                                                className="h-9 border-none bg-secondary/5 text-xs"
+                                                                maxLength={72}
+                                                            />
+                                                            <button onClick={() => removeListRow(sIdx, rIdx)} className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-md">
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                    {(!section.rows || section.rows.length < 10) && (
+                                                        <Button variant="outline" onClick={() => addListRow(sIdx)} className="w-full h-10 rounded-xl border-dashed border-2 text-primary font-black uppercase text-[10px]">
+                                                            <Plus className="w-3 h-3 mr-2" /> Add Option
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 )}

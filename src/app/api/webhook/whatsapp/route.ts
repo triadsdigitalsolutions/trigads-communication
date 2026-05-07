@@ -75,6 +75,17 @@ async function processWebhook(body: any) {
                                 mimeType: message.video?.mime_type || 'video/mp4',
                                 mediaType: 'video',
                             };
+                        } else if (messageType === 'interactive') {
+                            const interactive = message.interactive;
+                            if (interactive?.type === 'button_reply') {
+                                content = { body: interactive.button_reply.title || '[Button Reply]', raw: message };
+                            } else if (interactive?.type === 'list_reply') {
+                                content = { body: interactive.list_reply.title || '[List Reply]', raw: message };
+                            } else {
+                                content = { body: `[Interactive]`, raw: message };
+                            }
+                        } else if (messageType === 'button') {
+                            content = { body: message.button?.text || '[Button]', raw: message };
                         } else {
                             content = { body: `[${messageType}]`, raw: message };
                         }
@@ -112,10 +123,13 @@ async function processWebhook(body: any) {
                         });
 
                         // 3. Trigger Flow Engine
-                        if (messageType === 'text') {
-                            processFlow(contactId, message.text.body).catch(err => {
-                                console.error('[Webhook] Flow Engine Error:', err);
-                            });
+                        if (messageType === 'text' || messageType === 'interactive' || messageType === 'button') {
+                            const incomingText = content.body;
+                            if (incomingText && typeof incomingText === 'string') {
+                                processFlow(contactId, incomingText).catch(err => {
+                                    console.error('[Webhook] Flow Engine Error:', err);
+                                });
+                            }
                         }
 
                         // 4. Activate any "after_message" schedules for this contact

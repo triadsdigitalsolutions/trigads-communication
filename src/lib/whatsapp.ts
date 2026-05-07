@@ -162,15 +162,20 @@ export async function uploadMedia(
   return data as { id: string };
 }
 
-/** Send a media message (image, document, audio, video) by media_id */
+/** Send a media message (image, document, audio, video) by media_id or link */
 export async function sendMedia(
   to: string,
-  mediaId: string,
+  mediaIdOrLink: string,
   mediaType: 'image' | 'document' | 'audio' | 'video',
   filename?: string,
   caption?: string
 ) {
-  const mediaObject: Record<string, any> = { id: mediaId };
+  const mediaObject: Record<string, any> = {};
+  if (mediaIdOrLink.startsWith("http")) {
+      mediaObject.link = mediaIdOrLink;
+  } else {
+      mediaObject.id = mediaIdOrLink;
+  }
   if (mediaType === 'document' && filename) {
     mediaObject.filename = filename;
   }
@@ -185,7 +190,23 @@ export async function sendMedia(
       recipient_type: 'individual',
       to,
       type: mediaType,
-      [mediaType]: mediaObject,
+    }),
+  });
+}
+
+/** Send an interactive message (buttons or lists) with optional media header */
+export async function sendInteractive(
+  to: string,
+  interactive: any
+) {
+  return whatsappFetch('messages', {
+    method: 'POST',
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to,
+      type: 'interactive',
+      interactive: interactive,
     }),
   });
 }
