@@ -20,15 +20,12 @@ export function NavItem({ href, icon, label, mobile }: NavItemProps) {
             <Link
                 href={href}
                 title={label}
-                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                className={`relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 ${
                     isActive
-                        ? "text-primary bg-primary/15"
-                        : "text-sidebar-foreground/40 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                        ? "bg-primary text-primary-foreground shadow-glow"
+                        : "text-sidebar-foreground/60 hover:text-foreground hover:bg-secondary"
                 }`}
             >
-                {isActive && (
-                    <span className="absolute top-1.5 right-1.5 w-1 h-1 rounded-full bg-primary" />
-                )}
                 {icon}
             </Link>
         );
@@ -37,31 +34,16 @@ export function NavItem({ href, icon, label, mobile }: NavItemProps) {
     return (
         <Link
             href={href}
-            title={label}
-            className={`group relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+            className={`group flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-all duration-200 ${
                 isActive
-                    ? "bg-primary/20 text-primary"
-                    : "text-sidebar-foreground/35 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                    ? "bg-primary text-primary-foreground font-semibold shadow-glow-soft"
+                    : "text-sidebar-foreground hover:bg-secondary hover:text-foreground"
             }`}
         >
-            {/* Active pill */}
-            {isActive && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full" />
-            )}
-            {icon}
-            {/* Tooltip */}
-            <span className="
-                absolute left-full ml-2.5 px-2 py-1
-                bg-sidebar-accent border border-sidebar-border
-                text-[10px] font-semibold tracking-wide text-sidebar-foreground
-                rounded-lg whitespace-nowrap shadow-elevated
-                opacity-0 invisible pointer-events-none
-                group-hover:opacity-100 group-hover:visible
-                transition-all duration-150 z-50
-            ">
-                {label}
-                <span className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-sidebar-border" />
+            <span className={`shrink-0 ${isActive ? "text-primary-foreground" : "text-sidebar-foreground/70"}`}>
+                {icon}
             </span>
+            <span className="text-[13.5px] font-medium leading-none">{label}</span>
         </Link>
     );
 }
