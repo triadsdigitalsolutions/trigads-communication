@@ -380,9 +380,9 @@ export async function getContactsAction() {
 }
 
 export async function sendBulkTemplateAction(
-    contactIds: string[],
+    recipients: { phone: string, name: string, id: string }[],
     templateName: string,
-    parametersMap: Record<string, string[]>   // contactId -> parameters array
+    parametersMap: Record<string, string[]>   // keyed by recipient.id
 ): Promise<{ results: { contactId: string; name: string; success: boolean; error?: string }[] }> {
     const session = await auth();
     if (!session?.user) return { results: [] };
@@ -390,27 +390,44 @@ export async function sendBulkTemplateAction(
     // Fetch template once
     const tQuery = query(collection(db, "templates"), where("name", "==", templateName));
     const tSnap = await getDocs(tQuery);
-    if (tSnap.empty) return { results: contactIds.map(id => ({ contactId: id, name: id, success: false, error: "Template not found" })) };
+    if (tSnap.empty) return { results: recipients.map(r => ({ contactId: r.id, name: r.name, success: false, error: "Template not found" })) };
     const template = { id: tSnap.docs[0].id, ...tSnap.docs[0].data() } as any;
 
     const results: { contactId: string; name: string; success: boolean; error?: string }[] = [];
 
-    for (const contactId of contactIds) {
+    for (const recipient of recipients) {
         try {
-            const contactSnap = await getDoc(doc(db, "contacts", contactId));
-            if (!contactSnap.exists()) {
-                results.push({ contactId, name: contactId, success: false, error: "Contact not found" });
-                continue;
+            let actualContactId = "";
+            let contactName = recipient.name;
+
+            // Check if contact exists
+            const q = query(collection(db, "contacts"), where("phone", "==", recipient.phone));
+            const existingSnap = await getDocs(q);
+
+            if (!existingSnap.empty) {
+                const contactDoc = existingSnap.docs[0];
+                actualContactId = contactDoc.id;
+                contactName = contactDoc.data().name || contactName;
+            } else {
+                // Auto-create missing contact
+                const newRef = doc(collection(db, "contacts"));
+                await setDoc(newRef, {
+                    name: contactName || recipient.phone,
+                    phone: recipient.phone,
+                    lastMessage: "No messages yet",
+                    createdAt: new Date().toISOString()
+                });
+                actualContactId = newRef.id;
             }
-            const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
-            const parameters = parametersMap[contactId] || [];
+
+            const parameters = parametersMap[recipient.id] || [];
 
             let bodyText = (template.components as any[]).find(c => c.type === 'BODY')?.text || "Template Message";
             parameters.forEach((val, idx) => { bodyText = bodyText.replace(`{{${idx + 1}}}`, val); });
 
             const messageRef = doc(collection(db, "messages"));
             await setDoc(messageRef, {
-                contactId: contact.id,
+                contactId: actualContactId,
                 senderId: (session.user as any).id,
                 direction: "OUTGOING",
                 type: "template",
@@ -421,16 +438,16 @@ export async function sendBulkTemplateAction(
 
             try {
                 const { sendTemplate } = await import("@/lib/whatsapp");
-                const response = await sendTemplate(contact.phone, templateName, template.language, parameters);
+                const response = await sendTemplate(recipient.phone, templateName, template.language, parameters);
                 const metaMessageId = response.messages?.[0]?.id;
                 await updateDoc(messageRef, { status: "SENT", metaMessageId });
-                results.push({ contactId, name: contact.name || contact.phone, success: true });
+                results.push({ contactId: recipient.id, name: contactName, success: true });
             } catch (apiError: any) {
                 await updateDoc(messageRef, { status: "FAILED", content: { templateName, body: bodyText, parameters, error: apiError.message } });
-                results.push({ contactId, name: contact.name || contact.phone, success: false, error: apiError.message });
+                results.push({ contactId: recipient.id, name: contactName, success: false, error: apiError.message });
             }
         } catch (error: any) {
-            results.push({ contactId, name: contactId, success: false, error: error.message });
+            results.push({ contactId: recipient.id, name: recipient.name, success: false, error: error.message });
         }
     }
 

@@ -22,6 +22,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
     const [step, setStep] = useState(1);
     const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [csvRecipients, setCsvRecipients] = useState<{ phone: string; name: string }[]>([]);
     const [recipientSearch, setRecipientSearch] = useState("");
     const [templateSearch, setTemplateSearch] = useState("");
     const [parametersMap, setParametersMap] = useState<Record<string, string[]>>({});
@@ -44,6 +45,12 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
     }, [contacts, recipientSearch]);
 
     const selectedContacts = useMemo(() => contacts.filter(c => selectedIds.has(c.id)), [contacts, selectedIds]);
+    const allRecipients = useMemo(() => {
+        return [
+            ...selectedContacts.map(c => ({ id: c.id, phone: c.phone, name: c.name })),
+            ...csvRecipients.map(c => ({ id: c.phone, phone: c.phone, name: c.name }))
+        ];
+    }, [selectedContacts, csvRecipients]);
 
     const toggleContact = (id: string) => {
         setSelectedIds(prev => {
@@ -94,9 +101,10 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
             complete: (results) => {
                 const data = results.data as Record<string, string>[];
                 const newSelectedIds = new Set<string>(selectedIds);
+                const newCsvRecipients = [...csvRecipients];
                 const newParamsMap = { ...parametersMap };
                 let addedCount = 0;
-                let notFoundCount = 0;
+                let newContactCount = 0;
 
                 data.forEach(row => {
                     const phone = row["Phone"] || row["Phone Number"] || row["phone"];
@@ -105,28 +113,31 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                     const cleanPhone = phone.toString().replace(/\D/g, "");
                     const contact = contacts.find(c => c.phone === cleanPhone || c.phone.includes(cleanPhone) || cleanPhone.includes(c.phone));
                     
+                    const vars: string[] = [];
+                    for (let i = 0; i < variableCount; i++) {
+                        vars.push(row[`{{${i + 1}}}`] || row[`Var ${i + 1}`] || row[`Variable ${i + 1}`] || "");
+                    }
+
                     if (contact) {
                         newSelectedIds.add(contact.id);
                         addedCount++;
-                        
-                        const vars: string[] = [];
-                        for (let i = 0; i < variableCount; i++) {
-                            vars.push(row[`{{${i + 1}}}`] || row[`Var ${i + 1}`] || row[`Variable ${i + 1}`] || "");
-                        }
                         newParamsMap[contact.id] = vars;
                     } else {
-                        notFoundCount++;
+                        newContactCount++;
+                        const name = row["Name"] || row["name"] || cleanPhone;
+                        if (!newCsvRecipients.find(r => r.phone === cleanPhone)) {
+                            newCsvRecipients.push({ phone: cleanPhone, name });
+                        }
+                        newParamsMap[cleanPhone] = vars;
                     }
                 });
 
                 setSelectedIds(newSelectedIds);
+                setCsvRecipients(newCsvRecipients);
                 setParametersMap(newParamsMap);
                 
-                if (addedCount > 0) {
-                    toast.success(`Imported ${addedCount} contacts from CSV.`);
-                }
-                if (notFoundCount > 0) {
-                    toast.warning(`${notFoundCount} phone numbers were not found in your contacts.`);
+                if (addedCount > 0 || newContactCount > 0) {
+                    toast.success(`Imported ${addedCount} existing contacts and ${newContactCount} new numbers.`);
                 }
                 
                 if (fileInputRef.current) {
@@ -144,7 +155,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
         setIsSending(true);
         try {
             const { results } = await sendBulkTemplateAction(
-                Array.from(selectedIds),
+                allRecipients,
                 selectedTemplate.name,
                 parametersMap
             );
@@ -157,7 +168,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
     };
 
     const resetAll = () => {
-        setStep(1); setSelectedTemplate(null); setSelectedIds(new Set());
+        setStep(1); setSelectedTemplate(null); setSelectedIds(new Set()); setCsvRecipients([]);
         setParametersMap({}); setResults(null); setRecipientSearch(""); setTemplateSearch("");
     };
 
@@ -298,9 +309,9 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                                 <Square className="w-3.5 h-3.5 mr-1" /> None
                             </Button>
                         </div>
-                        {selectedIds.size > 0 && (
+                        {allRecipients.length > 0 && (
                             <Badge className="bg-primary text-white border-none px-3 py-1 rounded-full font-black text-sm">
-                                {selectedIds.size} selected
+                                {allRecipients.length} selected
                             </Badge>
                         )}
                     </div>
@@ -327,7 +338,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                         <Button variant="ghost" onClick={() => setStep(1)} className="h-12 px-6 rounded-2xl font-black uppercase tracking-widest text-muted-foreground">
                             <ChevronLeft className="w-4 h-4 mr-1" /> Back
                         </Button>
-                        <Button disabled={selectedIds.size === 0} onClick={() => setStep(3)}
+                        <Button disabled={allRecipients.length === 0} onClick={() => setStep(3)}
                             className="h-12 px-8 rounded-2xl font-black uppercase tracking-widest shadow-glow">
                             Next: Personalize <ChevronRight className="w-4 h-4 ml-1" />
                         </Button>
@@ -368,7 +379,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {selectedContacts.map((c, ri) => (
+                                        {allRecipients.map((c, ri) => (
                                             <tr key={c.id} className={ri % 2 === 0 ? "bg-white" : "bg-secondary/20"}>
                                                 <td className="px-5 py-3">
                                                     <p className="font-black text-sm">{c.name}</p>
@@ -395,7 +406,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                             <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
                             <p className="text-sm font-medium text-foreground">
                                 This template has no variables — it will be sent as-is to all{" "}
-                                <span className="font-black">{selectedIds.size}</span> recipients.
+                                <span className="font-black">{allRecipients.length}</span> recipients.
                             </p>
                         </div>
                     )}
@@ -404,7 +415,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                     <div className="bg-secondary/40 border border-border rounded-2xl p-4 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Users className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-black">{selectedIds.size} Recipients</span>
+                            <span className="text-sm font-black">{allRecipients.length} Recipients</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Layout className="w-4 h-4 text-primary" />
