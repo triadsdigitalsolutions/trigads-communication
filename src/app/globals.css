@@ -48,52 +48,54 @@
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 0.625rem;
 
-  /* ── Core Palette ───────────────────────────── */
-  --background:    oklch(0.985 0.005 145);
-  --foreground:    oklch(0.16 0.025 145);
+  /* ── Core Palette ──────────────────────────── */
+  --background:    oklch(0.978 0.003 264);
+  --foreground:    oklch(0.14 0.022 264);
 
   --card:          oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.025 145);
+  --card-foreground: oklch(0.14 0.022 264);
 
   --popover:       oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.025 145);
+  --popover-foreground: oklch(0.14 0.022 264);
 
-  /* Emerald-green brand primary */
-  --primary:       oklch(0.52 0.17 155);
+  /* Indigo/violet brand primary */
+  --primary:       oklch(0.54 0.21 278);
   --primary-foreground: oklch(1 0 0);
 
-  --secondary:     oklch(0.96 0.015 150);
-  --secondary-foreground: oklch(0.3 0.06 150);
+  --secondary:     oklch(0.962 0.008 264);
+  --secondary-foreground: oklch(0.3 0.04 264);
 
-  --muted:         oklch(0.97 0.008 150);
-  --muted-foreground: oklch(0.48 0.04 150);
+  --muted:         oklch(0.96 0.005 264);
+  --muted-foreground: oklch(0.50 0.03 264);
 
-  --accent:        oklch(0.94 0.03 150);
-  --accent-foreground: oklch(0.22 0.08 150);
+  --accent:        oklch(0.94 0.012 278);
+  --accent-foreground: oklch(0.22 0.07 278);
 
   --destructive:   oklch(0.57 0.22 22);
 
-  --border:        oklch(0.91 0.015 150);
-  --input:         oklch(0.93 0.012 150);
-  --ring:          oklch(0.52 0.17 155 / 35%);
+  --border:        oklch(0.90 0.008 264);
+  --input:         oklch(0.93 0.006 264);
+  --ring:          oklch(0.54 0.21 278 / 30%);
 
-  /* ── Sidebar ────────────────────────────────── */
-  --sidebar:              oklch(0.13 0.02 155);
-  --sidebar-foreground:   oklch(0.85 0.04 150);
-  --sidebar-primary:      oklch(0.52 0.17 155);
+  /* ── Sidebar ─────────────────────────────── */
+  --sidebar:              oklch(0.12 0.018 264);
+  --sidebar-foreground:   oklch(0.82 0.03 264);
+  --sidebar-primary:      oklch(0.62 0.19 278);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent:       oklch(0.20 0.03 155);
-  --sidebar-accent-foreground: oklch(0.92 0.03 150);
-  --sidebar-border:       oklch(0.22 0.025 155);
-  --sidebar-ring:         oklch(0.52 0.17 155 / 35%);
+  --sidebar-accent:       oklch(0.19 0.025 264);
+  --sidebar-accent-foreground: oklch(0.90 0.025 264);
+  --sidebar-border:       oklch(0.22 0.018 264);
+  --sidebar-ring:         oklch(0.54 0.21 278 / 30%);
 
-  /* ── Elevation & Glow ───────────────────────── */
-  --shadow-card:    0 1px 3px rgb(0 0 0 / 0.06), 0 4px 16px -4px rgb(0 0 0 / 0.08);
-  --shadow-elevated: 0 8px 32px -8px rgb(0 0 0 / 0.14), 0 2px 8px -2px rgb(0 0 0 / 0.06);
-  --shadow-glow:    0 0 30px -6px oklch(0.52 0.17 155 / 30%);
-  --shadow-sidebar: 4px 0 24px -8px rgb(0 0 0 / 0.35);
+  /* ── Elevation & Glow ────────────────────── */
+  --shadow-card:    0 1px 2px rgb(0 0 0 / 0.05), 0 3px 12px -3px rgb(0 0 0 / 0.07);
+  --shadow-elevated: 0 6px 24px -6px rgb(0 0 0 / 0.12), 0 2px 6px -2px rgb(0 0 0 / 0.05);
+  --shadow-premium: 0 12px 40px -12px rgb(0 0 0 / 0.15), 0 3px 10px -3px rgb(0 0 0 / 0.06);
+  --shadow-glow:    0 0 24px -4px oklch(0.54 0.21 278 / 35%);
+  --shadow-glow-soft: 0 0 40px -8px oklch(0.54 0.21 278 / 20%);
+  --shadow-sidebar: 2px 0 20px -4px rgb(0 0 0 / 0.30);
 }
 
 @layer base {
@@ -101,28 +103,55 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    letter-spacing: -0.01em;
+  }
+  h1, h2, h3, h4 {
+    letter-spacing: -0.025em;
   }
 }
 
-/* ── Scrollbar ──────────────────────────────────── */
-.custom-scrollbar::-webkit-scrollbar        { width: 4px; height: 4px; }
+/* ── Scrollbar ─────────────────────────────────── */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.80 0.008 264) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar        { width: 3px; height: 3px; }
 .custom-scrollbar::-webkit-scrollbar-track  { background: transparent; }
-.custom-scrollbar::-webkit-scrollbar-thumb  { background: oklch(0.7 0.04 150); border-radius: 99px; }
-.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: oklch(0.52 0.17 155); }
+.custom-scrollbar::-webkit-scrollbar-thumb  { background: oklch(0.80 0.008 264); border-radius: 99px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: oklch(0.54 0.21 278); }
 
-/* ── Utility shadows (referenced by Tailwind classes in JSX) ── */
+/* ── Utility shadows ───────────────────────────── */
 .shadow-card     { box-shadow: var(--shadow-card); }
 .shadow-elevated { box-shadow: var(--shadow-elevated); }
+.shadow-premium  { box-shadow: var(--shadow-premium); }
 .shadow-glow     { box-shadow: var(--shadow-glow); }
+.shadow-glow-soft { box-shadow: var(--shadow-glow-soft); }
 .shadow-sidebar  { box-shadow: var(--shadow-sidebar); }
 
-/* ── Subtle mesh gradient for login/hero backgrounds ── */
+/* ── Background mesh ───────────────────────────── */
 .bg-mesh {
-  background-color: oklch(0.985 0.005 145);
+  background-color: oklch(0.978 0.003 264);
   background-image:
-    radial-gradient(ellipse 80% 60% at 10% 0%, oklch(0.52 0.17 155 / 10%) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 50% at 90% 100%, oklch(0.52 0.17 155 / 7%) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 40% at 50% 50%, oklch(0.52 0.17 155 / 4%) 0%, transparent 100%);
+    radial-gradient(ellipse 70% 55% at 5% 0%,   oklch(0.54 0.21 278 / 8%)  0%, transparent 70%),
+    radial-gradient(ellipse 55% 45% at 95% 100%, oklch(0.54 0.21 278 / 5%)  0%, transparent 70%),
+    radial-gradient(ellipse 35% 35% at 50% 50%,  oklch(0.54 0.21 278 / 3%)  0%, transparent 100%);
+}
+
+/* ── Frosted glass card ────────────────────────── */
+.glass {
+  background: oklch(1 0 0 / 72%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 40%);
+}
+
+/* ── Smooth fade-in ─────────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-up {
+  animation: fade-up 0.4s ease both;
 }

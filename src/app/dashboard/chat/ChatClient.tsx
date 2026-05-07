@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft, List } from "lucide-react";
+import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft, List, ChevronRight } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
@@ -946,19 +946,19 @@ export default function ChatClient({
 
                         {/* Template Dialog — hoisted so it works from any window state */}
                         <Dialog open={isTemplatesOpen} onOpenChange={setIsTemplatesOpen}>
-                            <DialogContent className="bg-white border-border rounded-[3.5rem] p-12 max-w-3xl max-h-[85vh] flex flex-col shadow-2xl border-none overflow-hidden">
-                                <DialogHeader>
-                                    <DialogTitle className="text-4xl font-black tracking-tight mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                                        {selectedTemplate ? "Configure Placeholders" : "Meta-Approved Templates"}
+                            <DialogContent className="bg-white border-border rounded-2xl p-6 max-w-lg max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+                                <DialogHeader className="pb-3 border-b border-border">
+                                    <DialogTitle className="text-lg font-black tracking-tight text-foreground">
+                                        {selectedTemplate ? "Fill in Placeholders" : "Select a Template"}
                                     </DialogTitle>
                                 </DialogHeader>
 
                                 {selectedTemplate ? (
                                     <div className="flex flex-col h-full overflow-hidden">
-                                        <div className="flex-1 space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
-                                            <div className="p-10 bg-secondary/10 rounded-[2.5rem] border border-primary/5">
-                                                <h4 className="text-xs font-black uppercase tracking-[0.3em] text-primary/40 mb-4">Live Preview (Logical Reconstruction)</h4>
-                                                <p className="text-xl font-bold text-foreground/80 leading-relaxed italic">
+                                        <div className="flex-1 space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+                                            <div className="p-4 bg-secondary/10 rounded-xl border border-primary/5">
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 mb-2">Preview</h4>
+                                                <p className="text-sm font-medium text-foreground/80 leading-relaxed">
                                                     {(() => {
                                                         let text = (selectedTemplate.components as any[]).find(c => c.type === 'BODY')?.text || "";
                                                         templateParams.forEach((val, idx) => {
@@ -969,26 +969,23 @@ export default function ChatClient({
                                                 </p>
                                             </div>
 
-                                            <div className="space-y-6">
-                                                <div className="flex justify-between items-center">
-                                                    <h4 className="text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/60">Required Parameters</h4>
-                                                    <span className="text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase italic">{templateParams.length} Fields Detected</span>
-                                                </div>
-                                                <div className="grid grid-cols-1 gap-4">
+                                            <div className="space-y-3">
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Parameters ({templateParams.length} required)</h4>
+                                                <div className="grid grid-cols-1 gap-3">
                                                     {templateParams.map((param, idx) => (
-                                                        <div key={idx} className="relative group">
-                                                            <div className="absolute left-6 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary transition-all group-focus-within:bg-primary group-focus-within:text-white">
+                                                        <div key={idx} className="relative flex items-center gap-3">
+                                                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shrink-0">
                                                                 {idx + 1}
                                                             </div>
                                                             <Input
-                                                                placeholder={`Enter value for placeholder {{${idx + 1}}}...`}
+                                                                placeholder={`Placeholder {{${idx + 1}}}…`}
                                                                 value={param}
                                                                 onChange={(e) => {
                                                                     const newParams = [...templateParams];
                                                                     newParams[idx] = e.target.value;
                                                                     setTemplateParams(newParams);
                                                                 }}
-                                                                className="h-16 bg-secondary/30 border-none rounded-2xl pl-20 pr-8 font-bold text-foreground focus-visible:ring-primary/20 transition-all text-sm"
+                                                                className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-primary/20 text-sm"
                                                             />
                                                         </div>
                                                     ))}
@@ -996,36 +993,36 @@ export default function ChatClient({
                                             </div>
                                         </div>
 
-                                        <div className="mt-12 flex gap-4 shrink-0">
+                                        <div className="mt-4 flex gap-3 shrink-0">
                                             <Button
                                                 variant="ghost"
                                                 onClick={() => {
                                                     setSelectedTemplate(null);
                                                     setTemplateParams([]);
                                                 }}
-                                                className="flex-1 h-16 rounded-[1.5rem] font-black uppercase tracking-widest text-muted-foreground hover:bg-secondary transition-all"
+                                                className="flex-1 h-10 rounded-xl font-black uppercase tracking-widest text-muted-foreground hover:bg-secondary text-xs"
                                             >
-                                                Back to Vault
+                                                ← Back
                                             </Button>
                                             <Button
                                                 onClick={handleSendTemplate}
-                                                className="flex-[2] h-16 rounded-[1.5rem] bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow active:scale-95 transition-all"
+                                                className="flex-[2] h-10 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow active:scale-95 transition-all text-xs"
                                             >
-                                                Personalize &amp; Dispatch
+                                                Send Template
                                             </Button>
                                         </div>
                                     </div>
                                 ) : (
-                                    <ScrollArea className="flex-1 pr-6 -mr-4">
-                                        <div className="grid grid-cols-1 gap-6 py-6 font-sans">
+                                    <ScrollArea className="flex-1">
+                                        <div className="flex flex-col gap-2 py-2">
                                             {isLoadingTemplates ? (
-                                                <div className="py-24 text-center">
-                                                    <div className="inline-block w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-4" />
-                                                    <p className="text-xs font-black uppercase tracking-[0.3em] text-primary/40">Synchronizing Vault</p>
+                                                <div className="py-12 text-center">
+                                                    <div className="inline-block w-6 h-6 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-3" />
+                                                    <p className="text-xs font-black uppercase tracking-widest text-primary/40">Loading…</p>
                                                 </div>
                                             ) : templates.length === 0 ? (
-                                                <div className="py-24 text-center text-muted-foreground font-black uppercase tracking-widest text-xs opacity-50 italic">
-                                                    No approved campaign materials found
+                                                <div className="py-12 text-center text-muted-foreground font-bold text-sm italic">
+                                                    No approved templates found
                                                 </div>
                                             ) : (
                                                 templates.map((tpl) => (
@@ -1050,30 +1047,31 @@ export default function ChatClient({
                                                                 setTemplateParams([]);
                                                             }
                                                         }}
-                                                        className="group relative p-8 bg-secondary/20 rounded-[2.5rem] border border-transparent hover:border-primary/10 hover:bg-white transition-all cursor-pointer shadow-premium hover:shadow-glow"
+                                                        className="group flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-primary/15 hover:bg-primary/5 transition-all cursor-pointer"
                                                     >
-                                                        <div className="flex justify-between items-start mb-6">
-                                                            <div>
-                                                                <h4 className="font-black text-xl text-foreground group-hover:text-primary transition-colors">{tpl.name}</h4>
-                                                                <span className="text-[10px] font-black uppercase tracking-[0.25em] text-muted-foreground/50 mt-1 block">{tpl.category} • {tpl.language}</span>
-                                                            </div>
-                                                            <div className="w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                                                                <Zap className="w-6 h-6 text-primary fill-primary/20" />
-                                                            </div>
+                                                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-white transition-all">
+                                                            <Zap className="w-4 h-4 text-primary group-hover:text-white transition-all" />
                                                         </div>
-                                                        <div className="p-6 bg-secondary/10 rounded-2xl border border-white/40 mb-6 group-hover:bg-primary/5 group-hover:border-primary/5 transition-all">
-                                                            <p className="text-[15px] font-semibold text-foreground/80 leading-relaxed italic">
-                                                                {(tpl.components as any[]).find(c => c.type === 'BODY')?.text || "Metadata suppressed"}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-0.5">
+                                                                <h4 className="font-black text-sm text-foreground group-hover:text-primary transition-colors truncate">{tpl.name}</h4>
+                                                                <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 shrink-0">{tpl.language}</span>
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground/70 leading-relaxed line-clamp-2">
+                                                                {(tpl.components as any[]).find(c => c.type === 'BODY')?.text || ""}
                                                             </p>
-                                                        </div>
-                                                        <div className="flex flex-wrap gap-2.5">
-                                                            {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.map((btn: any, i: number) => (
-                                                                <div key={i} className="px-4 py-1.5 bg-primary/5 rounded-full border border-primary/10 text-[10px] font-black uppercase text-primary/70 flex items-center gap-2">
-                                                                    {btn.type === 'URL' ? <LinkIcon className="w-3 h-3" /> : <MousePointer2 className="w-3 h-3" />}
-                                                                    {btn.text}
+                                                            {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.length > 0 && (
+                                                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                                                    {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.map((btn: any, i: number) => (
+                                                                        <span key={i} className="px-2 py-0.5 bg-primary/5 border border-primary/10 rounded-full text-[9px] font-black uppercase text-primary/60 flex items-center gap-1">
+                                                                            {btn.type === 'URL' ? <LinkIcon className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
+                                                                            {btn.text}
+                                                                        </span>
+                                                                    ))}
                                                                 </div>
-                                                            ))}
+                                                            )}
                                                         </div>
+                                                        <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary shrink-0 mt-1 transition-colors" />
                                                     </div>
                                                 ))
                                             )}
