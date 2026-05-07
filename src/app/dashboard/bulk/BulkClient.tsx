@@ -1,17 +1,18 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
     Search, X, Check, Loader2, Send, ChevronRight,
     ChevronLeft, Users, Layout, Radio, CheckSquare,
     Square, AlertCircle, CheckCircle2, Image as ImageIcon,
-    MousePointer2, Link as LinkIcon
+    MousePointer2, Link as LinkIcon, Download, Upload
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { sendBulkTemplateAction } from "@/app/actions/whatsapp";
+import Papa from "papaparse";
 
 interface Contact { id: string; name: string; phone: string; }
 interface Template { id: string; name: string; language: string; category: string; status: string; components: any[]; }
@@ -26,6 +27,7 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
     const [parametersMap, setParametersMap] = useState<Record<string, string[]>>({});
     const [isSending, setIsSending] = useState(false);
     const [results, setResults] = useState<SendResult[] | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
 
     // Detect variable slots in body, e.g. {{1}}, {{2}}
     const bodyText = selectedTemplate?.components?.find(c => c.type === "BODY")?.text || "";
@@ -62,6 +64,78 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
             const arr = [...(prev[contactId] || Array(variableCount).fill(""))];
             arr[idx] = value;
             return { ...prev, [contactId]: arr };
+        });
+    };
+
+    const handleDownloadTemplate = () => {
+        if (!selectedTemplate) return;
+        const headers = ["Phone", "Name"];
+        for (let i = 0; i < variableCount; i++) {
+            headers.push(`{{${i + 1}}}`);
+        }
+        const csv = Papa.unparse([headers]);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `${selectedTemplate.name}_template.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+                const data = results.data as Record<string, string>[];
+                const newSelectedIds = new Set<string>(selectedIds);
+                const newParamsMap = { ...parametersMap };
+                let addedCount = 0;
+                let notFoundCount = 0;
+
+                data.forEach(row => {
+                    const phone = row["Phone"] || row["Phone Number"] || row["phone"];
+                    if (!phone) return;
+                    
+                    const cleanPhone = phone.toString().replace(/\D/g, "");
+                    const contact = contacts.find(c => c.phone === cleanPhone || c.phone.includes(cleanPhone) || cleanPhone.includes(c.phone));
+                    
+                    if (contact) {
+                        newSelectedIds.add(contact.id);
+                        addedCount++;
+                        
+                        const vars: string[] = [];
+                        for (let i = 0; i < variableCount; i++) {
+                            vars.push(row[`{{${i + 1}}}`] || row[`Var ${i + 1}`] || row[`Variable ${i + 1}`] || "");
+                        }
+                        newParamsMap[contact.id] = vars;
+                    } else {
+                        notFoundCount++;
+                    }
+                });
+
+                setSelectedIds(newSelectedIds);
+                setParametersMap(newParamsMap);
+                
+                if (addedCount > 0) {
+                    toast.success(`Imported ${addedCount} contacts from CSV.`);
+                }
+                if (notFoundCount > 0) {
+                    toast.warning(`${notFoundCount} phone numbers were not found in your contacts.`);
+                }
+                
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
+            },
+            error: (error: any) => {
+                toast.error("Failed to parse CSV file: " + error.message);
+            }
         });
     };
 
@@ -264,9 +338,20 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                     {/* Variable table */}
                     {variableCount > 0 ? (
                         <div className="space-y-3">
-                            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                                Fill in variables for each recipient
-                            </p>
+                            <div className="flex items-center justify-between">
+                                <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                    Fill in variables for each recipient
+                                </p>
+                                <div className="flex gap-2">
+                                    <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="h-8 rounded-lg font-black text-[10px] uppercase">
+                                        <Download className="w-3 h-3 mr-1" /> Template
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-8 rounded-lg font-black text-[10px] uppercase">
+                                        <Upload className="w-3 h-3 mr-1" /> Upload CSV
+                                    </Button>
+                                    <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
+                                </div>
+                            </div>
                             <div className="overflow-x-auto rounded-[1.5rem] border border-border">
                                 <table className="w-full text-sm">
                                     <thead>
@@ -303,12 +388,23 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                             </div>
                         </div>
                     ) : (
-                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
-                            <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                            <p className="text-sm font-medium text-foreground">
-                                This template has no variables — it will be sent as-is to all{" "}
-                                <span className="font-black">{selectedIds.size}</span> recipients.
-                            </p>
+                        <div className="space-y-3">
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="h-8 rounded-lg font-black text-[10px] uppercase">
+                                    <Download className="w-3 h-3 mr-1" /> Template
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-8 rounded-lg font-black text-[10px] uppercase">
+                                    <Upload className="w-3 h-3 mr-1" /> Upload CSV
+                                </Button>
+                                <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
+                            </div>
+                            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+                                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                                <p className="text-sm font-medium text-foreground">
+                                    This template has no variables — it will be sent as-is to all{" "}
+                                    <span className="font-black">{selectedIds.size}</span> recipients.
+                                </p>
+                            </div>
                         </div>
                     )}
 
