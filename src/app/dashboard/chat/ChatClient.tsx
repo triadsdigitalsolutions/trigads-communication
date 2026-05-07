@@ -410,40 +410,41 @@ export default function ChatClient({
     return (
         <div className="flex h-full bg-background font-sans overflow-hidden">
             {/* Column 2: Contacts List */}
-            <div className={`w-full md:w-[320px] lg:w-[400px] flex-col border-r border-border bg-white shrink-0 ${isMobileChatOpen ? 'hidden md:flex' : 'flex'} transition-all`}>
-                <div className="p-8 space-y-6">
+            <div className={`w-full md:w-[300px] lg:w-[320px] flex-col border-r border-border bg-white shrink-0 ${isMobileChatOpen ? 'hidden md:flex' : 'flex'}`}>
+                
+                {/* Header */}
+                <div className="px-5 pt-5 pb-3 space-y-3">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-4xl font-black tracking-tighter text-foreground">Chats</h1>
-
+                        <h1 className="text-xl font-bold text-foreground">Messages</h1>
                         <Dialog open={isNewChatOpen} onOpenChange={setIsNewChatOpen}>
                             <DialogTrigger asChild>
-                                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-black rounded-2xl h-12 px-6 shadow-glow transition-all active:scale-95 flex items-center gap-2">
-                                    <Plus className="w-5 h-5 stroke-[3px]" />
+                                <Button className="h-9 px-4 rounded-xl text-[13px] font-semibold shadow-glow transition-all active:scale-95 flex items-center gap-1.5">
+                                    <Plus className="w-3.5 h-3.5" />
                                     New Chat
                                 </Button>
                             </DialogTrigger>
-                            <DialogContent className="bg-white border-border rounded-[2.5rem] p-10 max-w-md">
+                            <DialogContent className="bg-white border-border rounded-2xl p-7 max-w-md">
                                 <DialogHeader>
-                                    <DialogTitle className="text-3xl font-black tracking-tighter">Start Conversation</DialogTitle>
+                                    <DialogTitle className="text-xl font-bold">Start Conversation</DialogTitle>
                                 </DialogHeader>
-                                <form onSubmit={handleCreateChat} className="space-y-6 pt-4">
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">Contact Name</label>
+                                <form onSubmit={handleCreateChat} className="space-y-4 pt-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">Contact Name</label>
                                         <Input
-                                            placeholder="Recipient Full Name"
+                                            placeholder="Full name"
                                             value={newChatName}
                                             onChange={(e) => setNewChatName(e.target.value)}
-                                            className="h-14 bg-secondary/50 border-none rounded-2xl px-6 font-bold text-foreground"
+                                            className="h-10 bg-secondary/50 border-none rounded-xl px-4 text-sm font-medium"
                                             required
                                         />
                                     </div>
-                                    <div className="space-y-3">
-                                        <label className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">WhatsApp Number</label>
-                                        <div className="flex gap-3">
+                                    <div className="space-y-1.5">
+                                        <label className="text-xs font-medium text-muted-foreground">WhatsApp Number</label>
+                                        <div className="flex gap-2">
                                             <select
                                                 value={selectedCountryCode}
                                                 onChange={(e) => setSelectedCountryCode(e.target.value)}
-                                                className="h-14 bg-secondary/50 border-none rounded-2xl px-4 font-bold text-foreground focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none shrink-0 min-w-[100px]"
+                                                className="h-10 bg-secondary/50 border-none rounded-xl px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none shrink-0 min-w-[90px]"
                                             >
                                                 {COUNTRY_CODES.map(c => (
                                                     <option key={c.code} value={c.code}>{c.label}</option>
@@ -453,40 +454,42 @@ export default function ChatClient({
                                                 placeholder="9876543210"
                                                 value={newChatPhone}
                                                 onChange={(e) => setNewChatPhone(e.target.value)}
-                                                className="h-14 bg-secondary/50 border-none rounded-2xl px-6 font-bold text-foreground flex-1"
+                                                className="h-10 bg-secondary/50 border-none rounded-xl px-4 text-sm font-medium flex-1"
                                                 required
                                             />
                                         </div>
-                                        <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-tighter italic text-center">Number will be combined with country code automatically</p>
+                                        <p className="text-[11px] text-muted-foreground/60 text-center">Country code + number are combined automatically</p>
                                     </div>
                                     <Button
                                         type="submit"
                                         disabled={isCreatingChat}
-                                        className="w-full h-14 rounded-2xl font-black uppercase tracking-widest text-primary-foreground shadow-glow active:scale-95 transition-all mt-4"
+                                        className="w-full h-10 rounded-xl font-semibold text-sm shadow-glow active:scale-95 transition-all"
                                     >
-                                        {isCreatingChat ? "Initializing..." : "Create & Send Template"}
+                                        {isCreatingChat ? "Creating..." : "Create & Send Template"}
                                     </Button>
                                 </form>
                             </DialogContent>
                         </Dialog>
                     </div>
 
-                    <div className="relative group">
-                        <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground/50" />
                         <Input
-                            placeholder="Find conversations..."
+                            placeholder="Search conversations..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="h-14 bg-secondary/50 border-none rounded-2xl focus-visible:ring-primary/20 transition-all text-sm pl-14 pr-6 font-medium shadow-inner"
+                            className="h-9 bg-secondary/60 border-none rounded-xl text-sm pl-9 pr-4 font-medium focus-visible:ring-primary/20"
                         />
                     </div>
                 </div>
 
-                <ScrollArea className="flex-1 px-4">
-                    <div className="space-y-4 pb-8">
+                {/* Contact list */}
+                <ScrollArea className="flex-1">
+                    <div className="px-2 pb-4">
                         {filteredContacts.length === 0 ? (
-                            <div className="p-12 text-center text-muted-foreground text-xs font-bold uppercase tracking-[0.2em] opacity-40 italic">
-                                No active discussions
+                            <div className="py-16 text-center text-muted-foreground text-xs font-medium opacity-50">
+                                No conversations found
                             </div>
                         ) : (
                             filteredContacts.map((contact) => (
@@ -496,78 +499,66 @@ export default function ChatClient({
                                         setSelectedContact(contact);
                                         setIsMobileChatOpen(true);
                                     }}
-                                    className={`relative p-6 cursor-pointer transition-all duration-300 rounded-[2rem] group border ${selectedContact?.id === contact.id
-                                        ? "bg-white shadow-elevated border-border"
-                                        : "bg-transparent border-transparent hover:bg-secondary/30"
-                                        }`}
+                                    className={`relative flex items-center gap-3 px-3 py-3 mx-0 cursor-pointer transition-all duration-150 rounded-xl group ${
+                                        selectedContact?.id === contact.id
+                                            ? "bg-primary/8 border border-primary/12"
+                                            : "border border-transparent hover:bg-secondary/60"
+                                    }`}
                                 >
-                                    <div className="flex gap-4">
-                                        <div className="relative shrink-0">
-                                            <Avatar className="h-14 w-14 rounded-2xl ring-2 ring-background shadow-premium">
-                                                <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/5 text-primary text-xl font-black">
-                                                    {contact.name[0]}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            {isWindowOpen(contact.lastIncomingAt) ? (
-                                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-sm animate-pulse" />
-                                            ) : contact.assignedToId ? (
-                                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-background shadow-sm flex items-center justify-center">
-                                                    <Clock className="w-2.5 h-2.5 text-white" />
-                                                </div>
-                                            ) : (
-                                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-sm animate-pulse" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-1">
-                                                <p className="font-extrabold text-[15px] truncate text-foreground">{contact.name}</p>
-                                                <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter opacity-60 shrink-0">{contact.time}</span>
-                                            </div>
-
-                                            {!contact.assignedToId ? (
-                                                <div className="mt-2">
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleAssign(contact.id, currentUser.id);
-                                                        }}
-                                                        className="h-8 rounded-xl bg-primary/10 hover:bg-primary text-primary hover:text-white text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all w-full"
-                                                    >
-                                                        Attend Chat
-                                                    </Button>
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col gap-1">
-                                                    <p className={`text-sm truncate font-medium leading-tight ${selectedContact?.id === contact.id ? "text-muted-foreground" : "text-muted-foreground/60"}`}>
-                                                        {contact.lastMessage}
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                        {contact.tags?.map(tag => {
-                                                            const tagConfig = PREDEFINED_TAGS.find(t => t.label === tag);
-                                                            return (
-                                                                <span
-                                                                    key={tag}
-                                                                    className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full ${tagConfig?.color || 'bg-secondary'} text-white shadow-sm`}
-                                                                >
-                                                                    {tag}
-                                                                </span>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {contact.unread > 0 && (
-                                                <div className="absolute top-1/2 -translate-y-1/2 right-6 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-glow">
-                                                    <span className="text-[10px] font-black text-primary-foreground">{contact.unread}</span>
-                                                </div>
-                                            )}
-                                        </div>
+                                    {/* Avatar */}
+                                    <div className="relative shrink-0">
+                                        <Avatar className="h-11 w-11 rounded-full">
+                                            <AvatarFallback className={`text-sm font-bold rounded-full ${
+                                                selectedContact?.id === contact.id
+                                                    ? "bg-primary/20 text-primary"
+                                                    : "bg-secondary text-muted-foreground"
+                                            }`}>
+                                                {contact.name[0].toUpperCase()}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        {/* Status dot */}
+                                        {isWindowOpen(contact.lastIncomingAt) ? (
+                                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                                        ) : (
+                                            <span className="absolute bottom-0 right-0 w-3 h-3 bg-amber-400 rounded-full border-2 border-white" />
+                                        )}
                                     </div>
-                                    {selectedContact?.id === contact.id && (
-                                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-12 bg-primary rounded-r-full" />
-                                    )}
+
+                                    {/* Content */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-baseline justify-between gap-2">
+                                            <p className={`text-[13.5px] font-semibold truncate ${
+                                                selectedContact?.id === contact.id ? "text-primary" : "text-foreground"
+                                            }`}>{contact.name}</p>
+                                            <span className="text-[11px] text-muted-foreground/60 shrink-0">{contact.time}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                            <p className="text-[12.5px] text-muted-foreground/70 truncate leading-tight flex-1">
+                                                {!contact.assignedToId
+                                                    ? <span className="text-primary/60 font-medium text-xs">Unattended</span>
+                                                    : (contact.lastMessage || "No messages yet")
+                                                }
+                                            </p>
+                                            {contact.unread > 0 && (
+                                                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full shrink-0">
+                                                    {contact.unread}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {/* Tags */}
+                                        {contact.tags && contact.tags.length > 0 && (
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {contact.tags.slice(0, 2).map(tag => {
+                                                    const tagConfig = PREDEFINED_TAGS.find(t => t.label === tag);
+                                                    return (
+                                                        <span key={tag} className={`text-[9px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded-full ${tagConfig?.color || 'bg-secondary'} text-white`}>
+                                                            {tag}
+                                                        </span>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             ))
                         )}
