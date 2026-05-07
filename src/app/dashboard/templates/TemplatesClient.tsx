@@ -298,16 +298,16 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                 <DialogContent className="rounded-2xl p-0 max-w-md border-border bg-white overflow-hidden">
                     {previewTemplate && (
                         <>
-                            <div className="p-6 border-b border-border flex items-start justify-between">
-                                <div>
-                                    <p className="font-black text-foreground text-lg tracking-tight">{previewTemplate.name}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <StatusBadge status={previewTemplate.status} />
-                                        <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border">{previewTemplate.category}</Badge>
-                                        <span className="text-[10px] text-muted-foreground font-bold uppercase">{previewTemplate.language}</span>
-                                    </div>
+                            <DialogHeader className="p-6 border-b border-border">
+                                <DialogTitle className="font-black text-foreground text-lg tracking-tight">
+                                    {previewTemplate.name}
+                                </DialogTitle>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <StatusBadge status={previewTemplate.status} />
+                                    <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-border">{previewTemplate.category}</Badge>
+                                    <span className="text-[10px] text-muted-foreground font-bold uppercase">{previewTemplate.language}</span>
                                 </div>
-                            </div>
+                            </DialogHeader>
                             <div className="p-6 bg-[#e5ddd5]">
                                 <WAPreview
                                     headerType={previewTemplate.components?.find(c => c.type === "HEADER")?.format || "NONE"}
