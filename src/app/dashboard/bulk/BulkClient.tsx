@@ -270,6 +270,20 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
             {/* ---- STEP 2: Recipients ---- */}
             {step === 2 && (
                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+                    <div className="flex flex-col sm:flex-row justify-between gap-3 items-start sm:items-center p-4 bg-secondary/30 rounded-2xl border border-border">
+                        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+                            Upload a spreadsheet to import recipients automatically
+                        </p>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="h-9 rounded-xl font-black text-xs uppercase bg-white">
+                                <Download className="w-3.5 h-3.5 mr-1.5" /> Template
+                            </Button>
+                            <Button size="sm" onClick={() => fileInputRef.current?.click()} className="h-9 rounded-xl font-black text-xs uppercase shadow-glow">
+                                <Upload className="w-3.5 h-3.5 mr-1.5" /> Upload CSV
+                            </Button>
+                            <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
+                        </div>
+                    </div>
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <div className="relative flex-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
@@ -338,20 +352,9 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                     {/* Variable table */}
                     {variableCount > 0 ? (
                         <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-                                    Fill in variables for each recipient
-                                </p>
-                                <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="h-8 rounded-lg font-black text-[10px] uppercase">
-                                        <Download className="w-3 h-3 mr-1" /> Template
-                                    </Button>
-                                    <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-8 rounded-lg font-black text-[10px] uppercase">
-                                        <Upload className="w-3 h-3 mr-1" /> Upload CSV
-                                    </Button>
-                                    <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
-                                </div>
-                            </div>
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                                Fill in variables for each recipient
+                            </p>
                             <div className="overflow-x-auto rounded-[1.5rem] border border-border">
                                 <table className="w-full text-sm">
                                     <thead>
@@ -388,23 +391,12 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                             </div>
                         </div>
                     ) : (
-                        <div className="space-y-3">
-                            <div className="flex justify-end gap-2">
-                                <Button variant="outline" size="sm" onClick={handleDownloadTemplate} className="h-8 rounded-lg font-black text-[10px] uppercase">
-                                    <Download className="w-3 h-3 mr-1" /> Template
-                                </Button>
-                                <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="h-8 rounded-lg font-black text-[10px] uppercase">
-                                    <Upload className="w-3 h-3 mr-1" /> Upload CSV
-                                </Button>
-                                <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
-                            </div>
-                            <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
-                                <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                                <p className="text-sm font-medium text-foreground">
-                                    This template has no variables — it will be sent as-is to all{" "}
-                                    <span className="font-black">{selectedIds.size}</span> recipients.
-                                </p>
-                            </div>
+                        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+                            <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                            <p className="text-sm font-medium text-foreground">
+                                This template has no variables — it will be sent as-is to all{" "}
+                                <span className="font-black">{selectedIds.size}</span> recipients.
+                            </p>
                         </div>
                     )}
 
