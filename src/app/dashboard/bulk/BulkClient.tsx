@@ -16,9 +16,10 @@ import Papa from "papaparse";
 
 interface Contact { id: string; name: string; phone: string; }
 interface Template { id: string; name: string; language: string; category: string; status: string; components: any[]; }
+interface Group { id: string; name: string; description?: string; contactIds: string[]; }
 type SendResult = { contactId: string; name: string; success: boolean; error?: string };
 
-export default function BulkClient({ contacts, templates }: { contacts: Contact[]; templates: Template[] }) {
+export default function BulkClient({ contacts, templates, groups = [] }: { contacts: Contact[]; templates: Template[]; groups?: Group[] }) {
     const [step, setStep] = useState(1);
     const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -72,6 +73,25 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
             arr[idx] = value;
             return { ...prev, [contactId]: arr };
         });
+    };
+
+    const handleAddFromGroup = (group: Group) => {
+        const newSelected = new Set(selectedIds);
+        let addedCount = 0;
+        group.contactIds.forEach((id: string) => {
+            // only add if the contact still exists in contacts array
+            const contactExists = contacts.some(c => c.id === id);
+            if (contactExists && !newSelected.has(id)) {
+                newSelected.add(id);
+                addedCount++;
+            }
+        });
+        setSelectedIds(newSelected);
+        if (addedCount > 0) {
+            toast.success(`Added ${addedCount} contacts from ${group.name}`);
+        } else {
+            toast.info(`All contacts in ${group.name} are already selected or invalid`);
+        }
     };
 
     const handleDownloadTemplate = () => {
@@ -295,6 +315,22 @@ export default function BulkClient({ contacts, templates }: { contacts: Contact[
                             <input type="file" ref={fileInputRef} accept=".csv" className="hidden" onChange={handleFileUpload} />
                         </div>
                     </div>
+
+                    {groups.length > 0 && (
+                        <div className="flex flex-col sm:flex-row justify-between gap-3 items-start sm:items-center p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                            <p className="text-xs font-black uppercase tracking-[0.2em] text-primary/70">
+                                Or add recipients from a Contact Group
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                {groups.map(g => (
+                                    <Button key={g.id} variant="outline" size="sm" onClick={() => handleAddFromGroup(g)} className="h-9 rounded-xl font-black text-xs uppercase bg-white border-primary/20 text-primary hover:bg-primary hover:text-white transition-all">
+                                        <Users className="w-3.5 h-3.5 mr-1.5" /> {g.name}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
                         <div className="relative flex-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />

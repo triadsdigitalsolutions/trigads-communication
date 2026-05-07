@@ -12,6 +12,7 @@ export default async function BulkPage() {
 
     let contacts: any[] = [];
     let templates: any[] = [];
+    let groups: any[] = [];
 
     try {
         // All contacts
@@ -26,9 +27,14 @@ export default async function BulkPage() {
         templates = templatesSnap.docs
             .map(d => ({ id: d.id, ...d.data() }))
             .sort((a: any, b: any) => (a.name || "").localeCompare(b.name || "")) as any[];
+        // Groups
+        const groupsSnap = await getDocs(collection(db, "contact_groups"));
+        groups = groupsSnap.docs
+            .map(d => ({ id: d.id, ...d.data() }))
+            .sort((a: any, b: any) => (a.name || "").localeCompare(b.name || "")) as any[];
     } catch (error) {
         console.warn("Could not fetch data for bulk page:", error);
     }
 
-    return <BulkClient contacts={contacts} templates={templates} />;
+    return <BulkClient contacts={contacts} templates={templates} groups={groups} />;
 }
