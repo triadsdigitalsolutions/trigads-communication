@@ -19,6 +19,16 @@ interface Template { id: string; name: string; language: string; category: strin
 interface Group { id: string; name: string; description?: string; contactIds: string[]; }
 type SendResult = { contactId: string; name: string; success: boolean; error?: string };
 
+const parsePhone = (raw: any) => {
+    if (!raw) return "";
+    let str = String(raw).trim();
+    if (str.toLowerCase().includes('e')) {
+        const num = Number(str);
+        if (!isNaN(num)) str = num.toLocaleString('fullwide', { useGrouping: false });
+    }
+    return str.replace(/\.0+$/, "").replace(/\D/g, "");
+};
+
 export default function BulkClient({ contacts, templates, groups = [] }: { contacts: Contact[]; templates: Template[]; groups?: Group[] }) {
     const [step, setStep] = useState(1);
     const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
@@ -138,7 +148,8 @@ export default function BulkClient({ contacts, templates, groups = [] }: { conta
                     const phone = row["Phone"] || row["Phone Number"] || row["phone"];
                     if (!phone) return;
                     
-                    const cleanPhone = phone.toString().replace(/\D/g, "");
+                    const cleanPhone = parsePhone(phone);
+                    if (!cleanPhone) return;
                     const contact = contacts.find(c => c.phone === cleanPhone || c.phone.includes(cleanPhone) || cleanPhone.includes(c.phone));
                     
                     const vars: string[] = [];

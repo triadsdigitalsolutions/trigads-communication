@@ -22,6 +22,16 @@ import Papa from "papaparse";
 interface Contact { id: string; name: string; phone: string; }
 interface Group { id: string; name: string; description: string; contactIds: string[]; }
 
+const parsePhone = (raw: any) => {
+    if (!raw) return "";
+    let str = String(raw).trim();
+    if (str.toLowerCase().includes('e')) {
+        const num = Number(str);
+        if (!isNaN(num)) str = num.toLocaleString('fullwide', { useGrouping: false });
+    }
+    return str.replace(/\.0+$/, "").replace(/\D/g, "");
+};
+
 export default function GroupsClient({ initialGroups, contacts }: { initialGroups: Group[], contacts: Contact[] }) {
     const [groups, setGroups] = useState<Group[]>(initialGroups);
     const [search, setSearch] = useState("");
@@ -107,7 +117,8 @@ export default function GroupsClient({ initialGroups, contacts }: { initialGroup
                 data.forEach(row => {
                     const phone = row["Phone"] || row["Phone Number"] || row["phone"];
                     if (!phone) return;
-                    const cleanPhone = phone.toString().replace(/\D/g, "");
+                    const cleanPhone = parsePhone(phone);
+                    if (!cleanPhone) return;
                     const name = row["Name"] || row["name"] || cleanPhone;
                     recipients.push({ phone: cleanPhone, name });
                 });
