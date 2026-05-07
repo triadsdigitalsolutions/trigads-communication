@@ -40,10 +40,14 @@ export default function BulkClient({ contacts, templates, groups = [] }: { conta
         return q ? templates.filter(t => t.name.toLowerCase().includes(q)) : templates;
     }, [templates, templateSearch]);
 
-    const filteredContacts = useMemo(() => {
+    const displayContacts = useMemo(() => {
         const q = recipientSearch.toLowerCase();
-        return q ? contacts.filter(c => c.name?.toLowerCase().includes(q) || c.phone?.includes(q)) : contacts;
-    }, [contacts, recipientSearch]);
+        const mixed = [
+            ...contacts,
+            ...csvRecipients.map(c => ({ id: c.phone, name: c.name, phone: c.phone, isCsv: true }))
+        ];
+        return q ? mixed.filter(c => c.name?.toLowerCase().includes(q) || c.phone?.includes(q)) : mixed;
+    }, [contacts, csvRecipients, recipientSearch]);
 
     const selectedContacts = useMemo(() => contacts.filter(c => selectedIds.has(c.id)), [contacts, selectedIds]);
     const allRecipients = useMemo(() => {
@@ -53,15 +57,19 @@ export default function BulkClient({ contacts, templates, groups = [] }: { conta
         ];
     }, [selectedContacts, csvRecipients]);
 
-    const toggleContact = (id: string) => {
-        setSelectedIds(prev => {
-            const next = new Set(prev);
-            next.has(id) ? next.delete(id) : next.add(id);
-            return next;
-        });
+    const toggleContact = (id: string, isCsv?: boolean) => {
+        if (isCsv) {
+            setCsvRecipients(prev => prev.filter(c => c.phone !== id));
+        } else {
+            setSelectedIds(prev => {
+                const next = new Set(prev);
+                next.has(id) ? next.delete(id) : next.add(id);
+                return next;
+            });
+        }
     };
 
-    const selectAll = () => setSelectedIds(new Set(filteredContacts.map(c => c.id)));
+    const selectAll = () => setSelectedIds(new Set(contacts.map(c => c.id)));
     const clearAll = () => setSelectedIds(new Set());
 
     const getParam = (contactId: string, idx: number) =>
@@ -353,16 +361,20 @@ export default function BulkClient({ contacts, templates, groups = [] }: { conta
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-1 custom-scrollbar">
-                        {filteredContacts.map(c => {
-                            const checked = selectedIds.has(c.id);
+                        {displayContacts.map(c => {
+                            const isCsv = (c as any).isCsv;
+                            const checked = isCsv ? true : selectedIds.has(c.id);
                             return (
-                                <button key={c.id} onClick={() => toggleContact(c.id)}
+                                <button key={`${c.id}-${isCsv}`} onClick={() => toggleContact(c.id, isCsv)}
                                     className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${checked ? "border-primary bg-primary/5" : "border-border bg-white hover:border-primary/30"}`}>
                                     <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${checked ? "bg-primary border-primary" : "border-border"}`}>
                                         {checked && <Check className="w-3 h-3 text-white stroke-[3]" />}
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="font-black text-sm truncate">{c.name}</p>
+                                        <p className="font-black text-sm truncate flex items-center gap-2">
+                                            {c.name}
+                                            {isCsv && <Badge className="h-4 text-[9px] bg-primary/20 text-primary border-none uppercase px-1.5 py-0 leading-none">CSV</Badge>}
+                                        </p>
                                         <p className="text-xs text-muted-foreground truncate">{c.phone}</p>
                                     </div>
                                 </button>
