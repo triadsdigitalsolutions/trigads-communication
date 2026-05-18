@@ -1094,7 +1094,7 @@ export default function ChatClient({
                                                                     {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.map((btn: any, i: number) => (
                                                                         <span key={i} className="px-2 py-0.5 bg-primary/5 border border-primary/10 rounded-full text-[9px] font-black uppercase text-primary/60 flex items-center gap-1">
                                                                             {btn.type === 'COPY_CODE' ? <Check className="w-2.5 h-2.5" /> : btn.type === 'URL' ? <LinkIcon className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
-                                                                            {btn.type === 'COPY_CODE' ? `Copy Code: ${btn.example || 'Code'}` : btn.text}
+                                                                            {btn.type === 'COPY_CODE' ? `Copy: ${btn.example || 'Code'}` : btn.text}
                                                                         </span>
                                                                     ))}
                                                                 </div>

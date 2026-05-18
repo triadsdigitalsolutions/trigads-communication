@@ -123,7 +123,7 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                 return;
             }
         }
-        setFormData(f => ({ ...f, buttons: [...f.buttons, { type, text: type === "COPY_CODE" ? "Copy offer code" : "", url: "", phone_number: "", example: type === "COPY_CODE" ? "PROMO15" : "" }] }));
+        setFormData(f => ({ ...f, buttons: [...f.buttons, { type, text: type === "COPY_CODE" ? "Copy" : "", url: "", phone_number: "", example: type === "COPY_CODE" ? "PROMO15" : "" }] }));
     };
 
     const removeBtn = (i: number) => setFormData(f => ({ ...f, buttons: f.buttons.filter((_, idx) => idx !== i) }));
@@ -291,7 +291,7 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                                                             onChange={e => {
                                                                 const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "").substring(0, 15);
                                                                 updateBtn(i, "example", val);
-                                                                updateBtn(i, "text", "Copy offer code");
+                                                                updateBtn(i, "text", "Copy");
                                                             }} 
                                                             placeholder="e.g. PROMO15" 
                                                             className="h-8 bg-background border-none rounded-lg text-xs font-bold font-mono text-foreground" 
@@ -423,7 +423,7 @@ function TemplateCard({ template, onPreview, onDelete }: { template: Template; o
                         {buttons.map((b: any, i: number) => (
                             <span key={i} className="flex items-center gap-1 px-2.5 py-1 bg-primary/8 border border-primary/20 rounded-lg text-[9px] font-black uppercase tracking-widest text-primary">
                                 {b.type === "URL" ? <LinkIcon className="w-2.5 h-2.5" /> : b.type === "PHONE_NUMBER" ? <Phone className="w-2.5 h-2.5" /> : b.type === "COPY_CODE" ? <Check className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
-                                {b.type === "COPY_CODE" ? `Copy Code: ${b.example || 'Code'}` : b.text}
+                                {b.type === "COPY_CODE" ? `Copy: ${b.example || 'Code'}` : b.text}
                             </span>
                         ))}
                     </div>
@@ -473,7 +473,7 @@ function WAPreview({ headerType, headerText, body, footer, buttons }: {
                             <div key={i} className="flex items-center justify-center py-2.5 border-b border-border/30 last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer gap-1">
                                 {b.type === "COPY_CODE" && <Check className="w-3.5 h-3.5 text-[#00a884]" />}
                                 <span className="text-[#00a884] text-sm font-bold">
-                                    {b.type === "COPY_CODE" ? `Copy offer code: ${b.example || 'Code'}` : (b.text || "Button")}
+                                    {b.type === "COPY_CODE" ? `Copy: ${b.example || 'Code'}` : (b.text || "Button")}
                                 </span>
                             </div>
                         ))}
