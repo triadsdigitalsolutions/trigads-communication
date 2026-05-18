@@ -57,7 +57,16 @@ export async function GET(req: NextRequest) {
                     );
                     if (tSnap.empty) throw new Error("Template not found");
                     const tpl = tSnap.docs[0].data() as any;
-                    await sendTemplate(contact.phone, data.templateName, tpl.language, data.templateParameters || []);
+
+                    // Support COPY_CODE button parameters
+                    let buttonParam: string | undefined = undefined;
+                    const buttonsComponent = (tpl.components as any[]).find(c => c.type === 'BUTTONS' || c.type === 'buttons');
+                    const copyCodeBtn = buttonsComponent?.buttons?.find((b: any) => b.type === 'COPY_CODE');
+                    if (copyCodeBtn) {
+                        buttonParam = copyCodeBtn.example || "PROMO15";
+                    }
+
+                    await sendTemplate(contact.phone, data.templateName, tpl.language, data.templateParameters || [], buttonParam);
                 }
 
                 await updateDoc(ref, { status: "SENT", sentAt: new Date().toISOString() });

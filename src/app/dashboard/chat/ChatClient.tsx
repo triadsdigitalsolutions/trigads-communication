@@ -117,6 +117,8 @@ export default function ChatClient({
     const [isLoadingTemplates, setIsLoadingTemplates] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
     const [templateParams, setTemplateParams] = useState<string[]>([]);
+    const [hasCopyCode, setHasCopyCode] = useState(false);
+    const [copyCodeValue, setCopyCodeValue] = useState("");
     const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -379,11 +381,18 @@ export default function ChatClient({
         if (!selectedContact || !selectedTemplate) return;
 
         setIsTemplatesOpen(false);
-        const result = await sendTemplateMessageAction(selectedContact.id, selectedTemplate.name, templateParams);
+        const result = await sendTemplateMessageAction(
+            selectedContact.id, 
+            selectedTemplate.name, 
+            templateParams,
+            hasCopyCode ? copyCodeValue : undefined
+        );
         if (result.success) {
             toast.success("Template sent!");
             setSelectedTemplate(null);
             setTemplateParams([]);
+            setHasCopyCode(false);
+            setCopyCodeValue("");
             // Immediate pulse refresh
             fetch(`/api/messages?contactId=${selectedContact.id}`)
                 .then(res => res.json())
@@ -982,6 +991,24 @@ export default function ChatClient({
                                                     ))}
                                                 </div>
                                             </div>
+
+                                            {hasCopyCode && (
+                                                <div className="space-y-1.5 pt-3 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Button Copy Code Value</label>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center text-[10px] font-black text-green-600 shrink-0">
+                                                            ⚓
+                                                        </div>
+                                                        <Input
+                                                            placeholder="e.g. SAVE20"
+                                                            value={copyCodeValue}
+                                                            onChange={(e) => setCopyCodeValue(e.target.value)}
+                                                            className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-primary/20 text-sm"
+                                                        />
+                                                    </div>
+                                                    <p className="text-[9px] text-muted-foreground/60 font-medium">This code will be copied to the clipboard when the customer taps the copy button.</p>
+                                                </div>
+                                            )}
                                         </div>
 
                                         <div className="mt-4 flex gap-3 shrink-0">
@@ -1030,6 +1057,17 @@ export default function ChatClient({
                                                                 });
                                                             }
 
+                                                            // Check for COPY_CODE button
+                                                            const buttonsComp = (tpl.components as any[]).find(c => c.type === 'BUTTONS' || c.type === 'buttons');
+                                                            const copyCodeBtn = buttonsComp?.buttons?.find((b: any) => b.type === 'COPY_CODE');
+                                                            if (copyCodeBtn) {
+                                                                setHasCopyCode(true);
+                                                                setCopyCodeValue(copyCodeBtn.example || "");
+                                                            } else {
+                                                                setHasCopyCode(false);
+                                                                setCopyCodeValue("");
+                                                            }
+
                                                             if (maxIndex > 0) {
                                                                 setSelectedTemplate(tpl);
                                                                 setTemplateParams(new Array(maxIndex).fill(""));
@@ -1055,8 +1093,8 @@ export default function ChatClient({
                                                                 <div className="flex flex-wrap gap-1 mt-1.5">
                                                                     {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.map((btn: any, i: number) => (
                                                                         <span key={i} className="px-2 py-0.5 bg-primary/5 border border-primary/10 rounded-full text-[9px] font-black uppercase text-primary/60 flex items-center gap-1">
-                                                                            {btn.type === 'URL' ? <LinkIcon className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
-                                                                            {btn.text}
+                                                                            {btn.type === 'COPY_CODE' ? <Check className="w-2.5 h-2.5" /> : btn.type === 'URL' ? <LinkIcon className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
+                                                                            {btn.type === 'COPY_CODE' ? `Copy Code: ${btn.example || 'Code'}` : btn.text}
                                                                         </span>
                                                                     ))}
                                                                 </div>

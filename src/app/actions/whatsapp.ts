@@ -238,7 +238,12 @@ export async function getTemplatesAction() {
     }
 }
 
-export async function sendTemplateMessageAction(contactId: string, templateName: string, parameters: string[] = []) {
+export async function sendTemplateMessageAction(
+    contactId: string, 
+    templateName: string, 
+    parameters: string[] = [],
+    buttonParam?: string
+) {
     const session = await auth();
     if (!session?.user) return { success: false, error: "Unauthorized" };
 
@@ -258,13 +263,21 @@ export async function sendTemplateMessageAction(contactId: string, templateName:
             bodyText = bodyText.replace(`{{${idx + 1}}}`, val);
         });
 
+        // Determine if COPY_CODE button is present and determine value
+        let actualButtonParam = buttonParam;
+        const buttonsComponent = (template.components as any[]).find(c => c.type === 'BUTTONS' || c.type === 'buttons');
+        const copyCodeBtn = buttonsComponent?.buttons?.find((b: any) => b.type === 'COPY_CODE');
+        if (copyCodeBtn && !actualButtonParam) {
+            actualButtonParam = copyCodeBtn.example || "PROMO15";
+        }
+
         const messageRef = doc(collection(db, "messages"));
         await setDoc(messageRef, {
             contactId: contact.id,
             senderId: (session.user as any).id,
             direction: "OUTGOING",
             type: "template",
-            content: { templateName, body: bodyText, parameters },
+            content: { templateName, body: bodyText, parameters, buttonParam: actualButtonParam },
             status: "SENT",
             createdAt: new Date().toISOString()
         });
@@ -273,7 +286,7 @@ export async function sendTemplateMessageAction(contactId: string, templateName:
 
         try {
             console.log(`[WhatsApp] Attempting to send template to: ${contact.phone}`);
-            const response = await sendTemplate(contact.phone, templateName, template.language, parameters);
+            const response = await sendTemplate(contact.phone, templateName, template.language, parameters, actualButtonParam);
 
             console.log(`[WhatsApp] API Response for template:`, JSON.stringify(response));
             const metaMessageId = response.messages?.[0]?.id;
@@ -393,6 +406,14 @@ export async function sendBulkTemplateAction(
     if (tSnap.empty) return { results: recipients.map(r => ({ contactId: r.id, name: r.name, success: false, error: "Template not found" })) };
     const template = { id: tSnap.docs[0].id, ...tSnap.docs[0].data() } as any;
 
+    // Detect if COPY_CODE button is present and determine value
+    let actualButtonParam: string | undefined = undefined;
+    const buttonsComponent = (template.components as any[]).find(c => c.type === 'BUTTONS' || c.type === 'buttons');
+    const copyCodeBtn = buttonsComponent?.buttons?.find((b: any) => b.type === 'COPY_CODE');
+    if (copyCodeBtn) {
+        actualButtonParam = copyCodeBtn.example || "PROMO15";
+    }
+
     const results: { contactId: string; name: string; success: boolean; error?: string }[] = [];
 
     for (const recipient of recipients) {
@@ -431,14 +452,14 @@ export async function sendBulkTemplateAction(
                 senderId: (session.user as any).id,
                 direction: "OUTGOING",
                 type: "template",
-                content: { templateName, body: bodyText, parameters },
+                content: { templateName, body: bodyText, parameters, buttonParam: actualButtonParam },
                 status: "SENT",
                 createdAt: new Date().toISOString(),
             });
 
             try {
                 const { sendTemplate } = await import("@/lib/whatsapp");
-                const response = await sendTemplate(recipient.phone, templateName, template.language, parameters);
+                const response = await sendTemplate(recipient.phone, templateName, template.language, parameters, actualButtonParam);
                 const metaMessageId = response.messages?.[0]?.id;
                 await updateDoc(messageRef, { status: "SENT", metaMessageId });
                 results.push({ contactId: recipient.id, name: contactName, success: true });

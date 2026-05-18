@@ -77,16 +77,53 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
         if (formData.headerType === "IMAGE") components.push({ type: "HEADER", format: "IMAGE" });
         components.push({ type: "BODY", text: formData.body });
         if (formData.footer) components.push({ type: "FOOTER", text: formData.footer });
-        if (formData.buttons.length) components.push({ type: "BUTTONS", buttons: formData.buttons });
+        
+        if (formData.buttons.length) {
+            const formattedButtons = formData.buttons.map(btn => {
+                if (btn.type === "COPY_CODE") {
+                    return {
+                        type: "COPY_CODE",
+                        example: btn.example || "PROMO15"
+                    };
+                }
+                if (btn.type === "URL") {
+                    return {
+                        type: "URL",
+                        text: btn.text,
+                        url: btn.url
+                    };
+                }
+                if (btn.type === "PHONE_NUMBER") {
+                    return {
+                        type: "PHONE_NUMBER",
+                        text: btn.text,
+                        phone_number: btn.phone_number
+                    };
+                }
+                return {
+                    type: "QUICK_REPLY",
+                    text: btn.text
+                };
+            });
+            components.push({ type: "BUTTONS", buttons: formattedButtons });
+        }
+
         const r = await createTemplateAction({ name: formData.name, category: formData.category, language: formData.language, components });
         setIsSubmitting(false);
         if (r.success) { toast.success("Template submitted for approval"); setView("grid"); setFormData(EMPTY_FORM); window.location.reload(); }
         else toast.error("Error: " + r.error);
     };
 
-    const addBtn = (type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER") => {
+    const addBtn = (type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE") => {
         if (formData.buttons.length >= 3) { toast.error("Max 3 buttons"); return; }
-        setFormData(f => ({ ...f, buttons: [...f.buttons, { type, text: "", url: "", phone_number: "" }] }));
+        if (type === "COPY_CODE") {
+            const hasCopyCode = formData.buttons.some(b => b.type === "COPY_CODE");
+            if (hasCopyCode) {
+                toast.error("Only one Copy Code button is allowed");
+                return;
+            }
+        }
+        setFormData(f => ({ ...f, buttons: [...f.buttons, { type, text: type === "COPY_CODE" ? "Copy offer code" : "", url: "", phone_number: "", example: type === "COPY_CODE" ? "PROMO15" : "" }] }));
     };
 
     const removeBtn = (i: number) => setFormData(f => ({ ...f, buttons: f.buttons.filter((_, idx) => idx !== i) }));
@@ -231,24 +268,44 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                                 <div className="flex items-center justify-between">
                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Buttons (max 3)</label>
                                     <div className="flex gap-1.5">
-                                        {(["QUICK_REPLY", "URL", "PHONE_NUMBER"] as const).map(type => (
+                                        {(["QUICK_REPLY", "URL", "PHONE_NUMBER", "COPY_CODE"] as const).map(type => (
                                             <button key={type} onClick={() => addBtn(type)}
                                                 className="px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors">
-                                                + {type === "QUICK_REPLY" ? "Reply" : type === "URL" ? "Link" : "Phone"}
+                                                + {type === "QUICK_REPLY" ? "Reply" : type === "URL" ? "Link" : type === "PHONE_NUMBER" ? "Phone" : "Copy Code"}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                                 <div className="space-y-2">
                                     {formData.buttons.map((btn, i) => (
-                                        <div key={i} className="flex gap-2 items-center p-3 bg-secondary/40 rounded-xl">
-                                            <div className="w-7 h-7 rounded-lg bg-background flex items-center justify-center shrink-0">
-                                                {btn.type === "URL" ? <LinkIcon className="w-3.5 h-3.5 text-blue-500" /> : btn.type === "PHONE_NUMBER" ? <Phone className="w-3.5 h-3.5 text-green-500" /> : <MousePointer2 className="w-3.5 h-3.5 text-primary" />}
+                                        <div key={i} className="flex gap-2 items-start p-3 bg-secondary/40 rounded-xl flex-col sm:flex-row sm:items-center w-full">
+                                            <div className="flex items-center gap-2 flex-1 w-full">
+                                                <div className="w-7 h-7 rounded-lg bg-background flex items-center justify-center shrink-0">
+                                                    {btn.type === "URL" ? <LinkIcon className="w-3.5 h-3.5 text-blue-500" /> : btn.type === "PHONE_NUMBER" ? <Phone className="w-3.5 h-3.5 text-green-500" /> : btn.type === "COPY_CODE" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <MousePointer2 className="w-3.5 h-3.5 text-primary" />}
+                                                </div>
+                                                {btn.type === "COPY_CODE" ? (
+                                                    <div className="flex-1 flex flex-col gap-1 min-w-0">
+                                                        <span className="text-[8px] font-black uppercase tracking-widest text-emerald-600">Copy Code Value (example, max 15 chars)</span>
+                                                        <Input 
+                                                            value={btn.example || ""} 
+                                                            onChange={e => {
+                                                                const val = e.target.value.replace(/[^a-zA-Z0-9]/g, "").substring(0, 15);
+                                                                updateBtn(i, "example", val);
+                                                                updateBtn(i, "text", "Copy offer code");
+                                                            }} 
+                                                            placeholder="e.g. PROMO15" 
+                                                            className="h-8 bg-background border-none rounded-lg text-xs font-bold font-mono text-foreground" 
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <Input value={btn.text} onChange={e => updateBtn(i, "text", e.target.value)} placeholder="Button label" className="h-8 flex-1 bg-background border-none rounded-lg text-xs font-medium" />
+                                                )}
                                             </div>
-                                            <Input value={btn.text} onChange={e => updateBtn(i, "text", e.target.value)} placeholder="Button label" className="h-8 flex-1 bg-background border-none rounded-lg text-xs font-medium" />
-                                            {btn.type === "URL" && <Input value={btn.url} onChange={e => updateBtn(i, "url", e.target.value)} placeholder="https://…" className="h-8 flex-1 bg-background border-none rounded-lg text-xs" />}
-                                            {btn.type === "PHONE_NUMBER" && <Input value={btn.phone_number} onChange={e => updateBtn(i, "phone_number", e.target.value)} placeholder="+91…" className="h-8 flex-1 bg-background border-none rounded-lg text-xs" />}
-                                            <button onClick={() => removeBtn(i)} className="w-7 h-7 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0"><XCircle className="w-4 h-4" /></button>
+                                            <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end sm:justify-start">
+                                                {btn.type === "URL" && <Input value={btn.url} onChange={e => updateBtn(i, "url", e.target.value)} placeholder="https://…" className="h-8 bg-background border-none rounded-lg text-xs w-full sm:w-36" />}
+                                                {btn.type === "PHONE_NUMBER" && <Input value={btn.phone_number} onChange={e => updateBtn(i, "phone_number", e.target.value)} placeholder="+91…" className="h-8 bg-background border-none rounded-lg text-xs w-full sm:w-36" />}
+                                                <button onClick={() => removeBtn(i)} className="w-7 h-7 rounded-lg text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors shrink-0"><XCircle className="w-4 h-4" /></button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -365,8 +422,8 @@ function TemplateCard({ template, onPreview, onDelete }: { template: Template; o
                     <div className="flex flex-wrap gap-1.5">
                         {buttons.map((b: any, i: number) => (
                             <span key={i} className="flex items-center gap-1 px-2.5 py-1 bg-primary/8 border border-primary/20 rounded-lg text-[9px] font-black uppercase tracking-widest text-primary">
-                                {b.type === "URL" ? <LinkIcon className="w-2.5 h-2.5" /> : b.type === "PHONE_NUMBER" ? <Phone className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
-                                {b.text}
+                                {b.type === "URL" ? <LinkIcon className="w-2.5 h-2.5" /> : b.type === "PHONE_NUMBER" ? <Phone className="w-2.5 h-2.5" /> : b.type === "COPY_CODE" ? <Check className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
+                                {b.type === "COPY_CODE" ? `Copy Code: ${b.example || 'Code'}` : b.text}
                             </span>
                         ))}
                     </div>
@@ -413,8 +470,11 @@ function WAPreview({ headerType, headerText, body, footer, buttons }: {
                 {buttons.length > 0 && (
                     <div className="border-t border-border/50">
                         {buttons.map((b: any, i: number) => (
-                            <div key={i} className="flex items-center justify-center py-2.5 border-b border-border/30 last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer">
-                                <span className="text-[#00a884] text-sm font-bold">{b.text || "Button"}</span>
+                            <div key={i} className="flex items-center justify-center py-2.5 border-b border-border/30 last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer gap-1">
+                                {b.type === "COPY_CODE" && <Check className="w-3.5 h-3.5 text-[#00a884]" />}
+                                <span className="text-[#00a884] text-sm font-bold">
+                                    {b.type === "COPY_CODE" ? `Copy offer code: ${b.example || 'Code'}` : (b.text || "Button")}
+                                </span>
                             </div>
                         ))}
                     </div>

@@ -55,18 +55,35 @@ export async function sendTemplate(
   to: string,
   templateName: string,
   languageCode: string,
-  parameters: string[] = []
+  parameters: string[] = [],
+  buttonParam?: string
 ) {
   // Construct body component with parameters if provided
-  const components = parameters.length > 0 ? [
-    {
+  const components: any[] = [];
+  
+  if (parameters.length > 0) {
+    components.push({
       type: "body",
       parameters: parameters.map(p => ({
         type: "text",
         text: p
       }))
-    }
-  ] : [];
+    });
+  }
+
+  if (buttonParam) {
+    components.push({
+      type: "button",
+      sub_type: "copy_code",
+      index: "0",
+      parameters: [
+        {
+          type: "text",
+          text: buttonParam
+        }
+      ]
+    });
+  }
 
   return whatsappFetch('messages', {
     method: 'POST',
@@ -83,6 +100,7 @@ export async function sendTemplate(
     }),
   });
 }
+
 
 export async function createTemplate(templateData: {
   name: string;

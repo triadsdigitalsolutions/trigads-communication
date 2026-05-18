@@ -157,7 +157,23 @@ async function executeMessageNode(contactId: string, data: any) {
         if (data.mode === 'template') {
             msgType = "template";
             content = { body: data.templateName };
-            await sendTemplate(contact.phone, data.templateName, "en_US", []);
+            
+            // Look up template to get correct language and COPY_CODE button param
+            const tSnap = await getDocs(
+                query(collection(db, "templates"), where("name", "==", data.templateName))
+            );
+            let language = "en_US";
+            let buttonParam: string | undefined = undefined;
+            if (!tSnap.empty) {
+                const tpl = tSnap.docs[0].data() as any;
+                language = tpl.language || "en_US";
+                const buttonsComponent = (tpl.components as any[]).find(c => c.type === 'BUTTONS' || c.type === 'buttons');
+                const copyCodeBtn = buttonsComponent?.buttons?.find((b: any) => b.type === 'COPY_CODE');
+                if (copyCodeBtn) {
+                    buttonParam = copyCodeBtn.example || "PROMO15";
+                }
+            }
+            await sendTemplate(contact.phone, data.templateName, language, [], buttonParam);
             
         } else if (data.mode === 'interactive_button') {
             msgType = "interactive";
