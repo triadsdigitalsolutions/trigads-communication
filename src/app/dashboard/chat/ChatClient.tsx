@@ -820,8 +820,10 @@ export default function ChatClient({
                                                         )}
                                                     </div>
                                                     {msg.status === "FAILED" && (
-                                                        <p className="px-4 text-[10px] font-black uppercase tracking-tighter text-destructive mt-1 max-w-xs truncate">
-                                                            {msg.error || "Delivery failed"}
+                                                        <p className="px-4 text-[10px] font-black uppercase tracking-tighter text-destructive mt-1 max-w-xs truncate" title={msg.error ?? undefined}>
+                                                            {msg.error
+                                                                ? `${msg.error}${(msg as any).errorCode ? ` (${(msg as any).errorCode})` : ''}`
+                                                                : "Delivery failed"}
                                                         </p>
                                                     )}
                                                 </div>

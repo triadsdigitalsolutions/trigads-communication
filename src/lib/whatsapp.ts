@@ -208,6 +208,7 @@ export async function sendMedia(
       recipient_type: 'individual',
       to,
       type: mediaType,
+      [mediaType]: mediaObject,
     }),
   });
 }

@@ -149,10 +149,17 @@ async function processWebhook(body: any) {
                             const mQuery = query(collection(db, "messages"), where("metaMessageId", "==", metaMessageId));
                             const mSnap = await getDocs(mQuery);
                             if (!mSnap.empty) {
-                                await updateDoc(mSnap.docs[0].ref, {
+                                const updateData: any = {
                                     status: status,
-                                    updatedAt: new Date().toISOString()
-                                });
+                                    updatedAt: new Date().toISOString(),
+                                };
+                                // Capture error details when WhatsApp reports FAILED delivery
+                                if (status === 'FAILED' && statusUpdate.errors?.length > 0) {
+                                    const err = statusUpdate.errors[0];
+                                    updateData.error = err.message || 'Delivery failed';
+                                    updateData.errorCode = err.code;
+                                }
+                                await updateDoc(mSnap.docs[0].ref, updateData);
                             }
                         }
                     }
