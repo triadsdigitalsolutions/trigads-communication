@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
             id: msg.id,
             text: (msg.content && typeof msg.content === 'object') ? 
                   (typeof msg.content.body === 'string' ? msg.content.body : msg.content.body?.text || "Interactive Message") : "Unknown content",
-            error: msg.content && typeof msg.content === 'object' && 'error' in msg.content ? msg.content.error : null,
+            error: (msg.content && typeof msg.content === 'object' && 'error' in msg.content ? msg.content.error : null) || msg.error || null,
             time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             direction: msg.direction,
             status: msg.status,

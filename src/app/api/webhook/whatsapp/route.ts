@@ -153,11 +153,13 @@ async function processWebhook(body: any) {
                                     status: status,
                                     updatedAt: new Date().toISOString(),
                                 };
-                                // Capture error details when WhatsApp reports FAILED delivery
+                                // Capture error details — use dot-notation so content fields are
+                                // preserved and 'content.error' is readable by the messages API
                                 if (status === 'FAILED' && statusUpdate.errors?.length > 0) {
                                     const err = statusUpdate.errors[0];
-                                    updateData.error = err.message || 'Delivery failed';
-                                    updateData.errorCode = err.code;
+                                    updateData['content.error'] = `${err.message || 'Delivery failed'} (code: ${err.code ?? '?'})`;
+                                } else if (status === 'FAILED') {
+                                    updateData['content.error'] = 'Delivery failed — no error details from WhatsApp';
                                 }
                                 await updateDoc(mSnap.docs[0].ref, updateData);
                             }
