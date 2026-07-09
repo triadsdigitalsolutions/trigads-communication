@@ -16,6 +16,8 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogDescription,
+    DialogFooter
 } from "@/components/ui/dialog";
 
 const COUNTRY_CODES = [
@@ -125,6 +127,8 @@ export default function ChatClient({
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+    const [pendingFile, setPendingFile] = useState<File | null>(null);
+    const [pendingFileCaption, setPendingFileCaption] = useState("");
 
     // Quick Reply / Interactive Message state
     const [isQuickReplyMode, setIsQuickReplyMode] = useState(false);
@@ -158,16 +162,21 @@ export default function ChatClient({
             return;
         }
 
+        setPendingFile(file);
+        setPendingFileCaption(messageInput);
+    };
+
+    const confirmSendAttachment = async () => {
+        if (!pendingFile || !selectedContact) return;
         setIsUploading(true);
-        const toastId = toast.loading(`Uploading ${file.name}...`);
+        const toastId = toast.loading(`Uploading ${pendingFile.name}...`);
 
         try {
             const formData = new FormData();
-            formData.append("file", file);
+            formData.append("file", pendingFile);
             formData.append("contactId", selectedContact.id);
-            // Use the typed message as an image/video caption
-            if (messageInput.trim()) {
-                formData.append("caption", messageInput.trim());
+            if (pendingFileCaption.trim()) {
+                formData.append("caption", pendingFileCaption.trim());
             }
 
             const res = await fetch("/api/upload", {
@@ -180,8 +189,10 @@ export default function ChatClient({
                 throw new Error(data.error || "Upload failed");
             }
 
-            toast.success(`${file.name} sent!`, { id: toastId });
-            setMessageInput(""); // clear caption text
+            toast.success(`${pendingFile.name} sent!`, { id: toastId });
+            if (pendingFileCaption.trim() === messageInput.trim()) {
+                setMessageInput(""); // clear caption text if it was from input
+            }
 
             // Refresh messages
             fetch(`/api/messages?contactId=${selectedContact.id}`)
@@ -191,6 +202,8 @@ export default function ChatClient({
             toast.error(err.message || "Upload failed", { id: toastId });
         } finally {
             setIsUploading(false);
+            setPendingFile(null);
+            setPendingFileCaption("");
         }
     };
 
@@ -1336,6 +1349,57 @@ export default function ChatClient({
                     </div>
                 )}
             </div>
+
+            {/* Send Attachment Dialog */}
+            <Dialog open={!!pendingFile} onOpenChange={(open) => !open && setPendingFile(null)}>
+                <DialogContent className="max-w-md p-6 bg-white rounded-3xl border-none shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                            <Paperclip className="w-5 h-5 text-primary" /> Send Attachment
+                        </DialogTitle>
+                        <DialogDescription className="text-muted-foreground/70 text-sm font-medium">
+                            Add a description or caption before sending.
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="mt-4 space-y-4">
+                        {pendingFile?.type.startsWith('image/') ? (
+                            <div className="w-full h-48 rounded-2xl overflow-hidden bg-secondary/30 relative">
+                                <img src={URL.createObjectURL(pendingFile)} alt="Preview" className="w-full h-full object-contain" />
+                            </div>
+                        ) : (
+                            <div className="w-full h-32 rounded-2xl bg-secondary/30 flex flex-col items-center justify-center gap-2">
+                                <Paperclip className="w-8 h-8 text-primary/50" />
+                                <span className="font-bold text-sm text-foreground truncate max-w-[80%] px-4">{pendingFile?.name}</span>
+                            </div>
+                        )}
+                        <Input 
+                            value={pendingFileCaption}
+                            onChange={(e) => setPendingFileCaption(e.target.value)}
+                            placeholder="Add a caption..."
+                            className="h-12 bg-secondary/30 border-transparent rounded-2xl font-medium focus-visible:ring-primary/20"
+                            autoFocus
+                        />
+                    </div>
+                    
+                    <DialogFooter className="mt-6 flex gap-3">
+                        <Button 
+                            variant="ghost" 
+                            onClick={() => setPendingFile(null)} 
+                            className="flex-1 h-12 rounded-2xl font-black uppercase tracking-widest text-muted-foreground hover:bg-secondary transition-all"
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            onClick={confirmSendAttachment} 
+                            disabled={isUploading} 
+                            className="flex-1 h-12 rounded-2xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow active:scale-95 transition-all"
+                        >
+                            {isUploading ? "Sending..." : "Send"}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

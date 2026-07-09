@@ -27,18 +27,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
                 {/* Nav */}
                 <nav className="flex flex-col flex-1 overflow-y-auto custom-scrollbar px-3 py-4 gap-1">
-                    <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-[18px] h-[18px]" />} label="Messages" />
-                    <NavItem href="/dashboard/templates" icon={<Layout        className="w-[18px] h-[18px]" />} label="Templates" />
-                    <NavItem href="/dashboard/flows"     icon={<Zap           className="w-[18px] h-[18px]" />} label="Flows" />
-                    <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-[18px] h-[18px]" />} label="Contacts" />
-                    <NavItem href="/dashboard/groups"    icon={<Layers        className="w-[18px] h-[18px]" />} label="Groups" />
-                    <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-[18px] h-[18px]" />} label="Broadcast" />
-                    <NavItem href="/dashboard/scheduler" icon={<CalendarClock className="w-[18px] h-[18px]" />} label="Scheduler" />
+                    <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-[18px] h-[18px]" />} label="Messages"  iconColor="text-blue-500" iconBg="bg-blue-500/10" />
+                    <NavItem href="/dashboard/templates" icon={<Layout        className="w-[18px] h-[18px]" />} label="Templates" iconColor="text-emerald-500" iconBg="bg-emerald-500/10" />
+                    <NavItem href="/dashboard/flows"     icon={<Zap           className="w-[18px] h-[18px]" />} label="Flows"     iconColor="text-amber-500" iconBg="bg-amber-500/10" />
+                    <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-[18px] h-[18px]" />} label="Contacts"  iconColor="text-purple-500" iconBg="bg-purple-500/10" />
+                    <NavItem href="/dashboard/groups"    icon={<Layers        className="w-[18px] h-[18px]" />} label="Groups"    iconColor="text-rose-500" iconBg="bg-rose-500/10" />
+                    <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-[18px] h-[18px]" />} label="Broadcast" iconColor="text-indigo-500" iconBg="bg-indigo-500/10" />
+                    <NavItem href="/dashboard/scheduler" icon={<CalendarClock className="w-[18px] h-[18px]" />} label="Scheduler" iconColor="text-cyan-500" iconBg="bg-cyan-500/10" />
                     
                     {role === "ADMIN" && (
                         <>
                             <div className="h-px w-full bg-border/60 my-2" />
-                            <NavItem href="/dashboard/admin/users" icon={<Users className="w-[18px] h-[18px]" />} label="Agents" />
+                            <NavItem href="/dashboard/admin/users" icon={<Users className="w-[18px] h-[18px]" />} label="Agents" iconColor="text-pink-500" iconBg="bg-pink-500/10" />
                         </>
                     )}
                 </nav>
@@ -80,12 +80,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 flex items-center justify-around px-2 h-[68px]
                 bg-sidebar/80 backdrop-blur-xl border border-border rounded-2xl
                 shadow-elevated">
-                <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-[22px] h-[22px]" />} label="Chat" mobile />
-                <NavItem href="/dashboard/templates" icon={<Layout        className="w-[22px] h-[22px]" />} label="Templates" mobile />
-                <NavItem href="/dashboard/flows"     icon={<Zap           className="w-[22px] h-[22px]" />} label="Flows" mobile />
-                <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-[22px] h-[22px]" />} label="Contacts" mobile />
-                <NavItem href="/dashboard/groups"    icon={<Layers        className="w-[22px] h-[22px]" />} label="Groups" mobile />
-                <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-[22px] h-[22px]" />} label="Bulk" mobile />
+                <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-[22px] h-[22px]" />} label="Chat" mobile iconColor="text-blue-500" iconBg="bg-blue-500/10" />
+                <NavItem href="/dashboard/templates" icon={<Layout        className="w-[22px] h-[22px]" />} label="Templates" mobile iconColor="text-emerald-500" iconBg="bg-emerald-500/10" />
+                <NavItem href="/dashboard/flows"     icon={<Zap           className="w-[22px] h-[22px]" />} label="Flows" mobile iconColor="text-amber-500" iconBg="bg-amber-500/10" />
+                <NavItem href="/dashboard/contacts"  icon={<BookUser      className="w-[22px] h-[22px]" />} label="Contacts" mobile iconColor="text-purple-500" iconBg="bg-purple-500/10" />
+                <NavItem href="/dashboard/groups"    icon={<Layers        className="w-[22px] h-[22px]" />} label="Groups" mobile iconColor="text-rose-500" iconBg="bg-rose-500/10" />
+                <NavItem href="/dashboard/bulk"      icon={<Radio         className="w-[22px] h-[22px]" />} label="Bulk" mobile iconColor="text-indigo-500" iconBg="bg-indigo-500/10" />
                 <form action={async () => { "use server"; await signOut(); }}>
                     <button type="submit" className="w-12 h-12 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all active:scale-95">
                         <LogOut className="w-[22px] h-[22px]" />

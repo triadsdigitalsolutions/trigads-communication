@@ -9,9 +9,11 @@ interface NavItemProps {
     icon: React.ReactNode;
     label: string;
     mobile?: boolean;
+    iconColor?: string;
+    iconBg?: string;
 }
 
-export function NavItem({ href, icon, label, mobile }: NavItemProps) {
+export function NavItem({ href, icon, label, mobile, iconColor = "text-muted-foreground", iconBg = "bg-transparent" }: NavItemProps) {
     const pathname = usePathname();
     const isActive = pathname === href || pathname.startsWith(href + "/");
 
@@ -26,7 +28,9 @@ export function NavItem({ href, icon, label, mobile }: NavItemProps) {
                         : "text-muted-foreground hover:text-foreground hover:bg-secondary/80"
                 }`}
             >
-                {icon}
+                <div className={!isActive ? iconColor : ""}>
+                    {icon}
+                </div>
             </Link>
         );
     }
@@ -34,16 +38,22 @@ export function NavItem({ href, icon, label, mobile }: NavItemProps) {
     return (
         <Link
             href={href}
-            className={`group flex items-center gap-3.5 w-full px-4 py-3 rounded-[12px] transition-all duration-200 active:scale-[0.98] ${
+            className={`group flex items-center gap-3.5 w-full px-3 py-2.5 rounded-[12px] transition-all duration-200 active:scale-[0.98] ${
                 isActive
-                    ? "bg-primary/10 text-primary font-semibold shadow-sm"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground font-medium"
+                    ? "bg-primary/5 text-primary shadow-sm border border-primary/10"
+                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground border border-transparent"
             }`}
         >
-            <span className={`shrink-0 transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}>
+            <span className={`flex items-center justify-center w-[34px] h-[34px] rounded-[10px] shrink-0 transition-all duration-300 ${
+                isActive 
+                    ? "bg-primary text-primary-foreground shadow-glow scale-105" 
+                    : `${iconBg} ${iconColor} group-hover:scale-105 group-hover:shadow-sm`
+            }`}>
                 {icon}
             </span>
-            <span className="text-[14px] leading-none tracking-tight">{label}</span>
+            <span className={`text-[14px] leading-none tracking-tight transition-colors ${isActive ? "text-primary font-bold" : "group-hover:text-foreground font-semibold"}`}>
+                {label}
+            </span>
         </Link>
     );
 }

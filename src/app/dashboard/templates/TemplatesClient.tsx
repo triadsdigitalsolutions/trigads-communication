@@ -70,8 +70,10 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
     };
 
     const handleSubmit = async () => {
-        if (!formData.name || !formData.body) { toast.error("Name and body are required"); return; }
-        setIsSubmitting(true);
+        try {
+            if (!formData.name || !formData.body) { toast.error("Name and body are required"); return; }
+            if (formData.headerType === "TEXT" && !formData.headerText) { toast.error("Header text is required"); return; }
+            setIsSubmitting(true);
         const components: any[] = [];
         if (formData.headerType === "TEXT") components.push({ type: "HEADER", format: "TEXT", text: formData.headerText });
         if (formData.headerType === "IMAGE") components.push({ type: "HEADER", format: "IMAGE" });
@@ -108,10 +110,22 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
             components.push({ type: "BUTTONS", buttons: formattedButtons });
         }
 
-        const r = await createTemplateAction({ name: formData.name, category: formData.category, language: formData.language, components });
-        setIsSubmitting(false);
-        if (r.success) { toast.success("Template submitted for approval"); setView("grid"); setFormData(EMPTY_FORM); window.location.reload(); }
-        else toast.error("Error: " + r.error);
+            const r = await createTemplateAction({ name: formData.name, category: formData.category, language: formData.language, components });
+            setIsSubmitting(false);
+            if (r.success) { 
+                toast.success("Template submitted for approval"); 
+                setView("grid"); 
+                setFormData(EMPTY_FORM); 
+                window.location.reload(); 
+            } else {
+                toast.error(r.error || "Failed to submit template");
+                console.error("Template creation failed:", r.error);
+            }
+        } catch (err: any) {
+            setIsSubmitting(false);
+            toast.error(err.message || "An unexpected error occurred during submission");
+            console.error("Template creation error:", err);
+        }
     };
 
     const addBtn = (type: "QUICK_REPLY" | "URL" | "PHONE_NUMBER" | "COPY_CODE") => {
