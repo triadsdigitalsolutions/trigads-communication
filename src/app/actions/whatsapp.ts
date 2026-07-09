@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/firebase";
 import { collection, doc, getDoc, updateDoc, setDoc, query, where, getDocs, deleteDoc } from "firebase/firestore";
-import { sendText, sendTemplate, listTemplates, createTemplate } from "@/lib/whatsapp";
+import { sendText, sendTemplate, listTemplates, createTemplate, sendInteractive } from "@/lib/whatsapp";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 
@@ -59,6 +59,73 @@ export async function sendMessageAction(contactId: string, text: string) {
     } catch (error: any) {
         console.error("Critical Failure in sendMessageAction:", error);
         return { success: false, error: error.message || "Unknown error occurred" };
+    }
+}
+
+/** Send a WhatsApp interactive message with quick-reply buttons (max 3 buttons, max 20 chars per title) */
+export async function sendInteractiveMessageAction(
+    contactId: string,
+    bodyText: string,
+    buttonLabels: string[]
+) {
+    const session = await auth();
+    if (!session?.user) return { success: false, error: "Unauthorized" };
+
+    if (!bodyText.trim()) return { success: false, error: "Message body is required" };
+    if (buttonLabels.length === 0) return { success: false, error: "At least one button is required" };
+    if (buttonLabels.length > 3) return { success: false, error: "Maximum 3 buttons allowed" };
+
+    try {
+        const contactSnap = await getDoc(doc(db, "contacts", contactId));
+        if (!contactSnap.exists()) throw new Error("Contact not found");
+        const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
+
+        const buttons = buttonLabels
+            .filter(l => l.trim())
+            .map((label, idx) => ({
+                type: "reply",
+                reply: {
+                    id: `qr_${Date.now()}_${idx}`,
+                    title: label.trim().slice(0, 20), // WhatsApp max 20 chars
+                },
+            }));
+
+        const interactive = {
+            type: "button",
+            body: { text: bodyText.trim() },
+            action: { buttons },
+        };
+
+        const messageRef = doc(collection(db, "messages"));
+        await setDoc(messageRef, {
+            contactId: contact.id,
+            senderId: (session.user as any).id,
+            direction: "OUTGOING",
+            type: "interactive",
+            content: { body: bodyText.trim(), interactive },
+            status: "SENT",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+
+        revalidatePath("/dashboard/chat");
+
+        try {
+            const response = await sendInteractive(contact.phone, interactive);
+            const metaMessageId = response.messages?.[0]?.id;
+            await updateDoc(messageRef, { status: "SENT", metaMessageId });
+            revalidatePath("/dashboard/chat");
+            return { success: true };
+        } catch (apiError: any) {
+            await updateDoc(messageRef, {
+                status: "FAILED",
+                "content.error": apiError.message,
+            });
+            revalidatePath("/dashboard/chat");
+            return { success: false, error: apiError.message };
+        }
+    } catch (error: any) {
+        return { success: false, error: error.message || "Unknown error" };
     }
 }
 

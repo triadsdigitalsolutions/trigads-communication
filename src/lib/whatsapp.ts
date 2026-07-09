@@ -180,6 +180,20 @@ export async function uploadMedia(
   return data as { id: string };
 }
 
+/** Send an interactive message (buttons, list, etc.) */
+export async function sendInteractive(to: string, interactive: object) {
+  return whatsappFetch('messages', {
+    method: 'POST',
+    body: JSON.stringify({
+      messaging_product: 'whatsapp',
+      recipient_type: 'individual',
+      to,
+      type: 'interactive',
+      interactive,
+    }),
+  });
+}
+
 /** Send a media message (image, document, audio, video) by media_id or link */
 export async function sendMedia(
   to: string,

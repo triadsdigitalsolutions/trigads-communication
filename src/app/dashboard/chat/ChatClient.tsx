@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { sendMessageAction, assignContactAction, createContactAction, getTemplatesAction, sendTemplateMessageAction, updateContactTagsAction, clearChatAction } from "@/app/actions/whatsapp";
+import { sendMessageAction, assignContactAction, createContactAction, getTemplatesAction, sendTemplateMessageAction, updateContactTagsAction, clearChatAction, sendInteractiveMessageAction } from "@/app/actions/whatsapp";
 import { toast } from "sonner";
 import {
     Dialog,
@@ -125,6 +125,11 @@ export default function ChatClient({
     const inputRef = useRef<HTMLInputElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
+
+    // Quick Reply Button state
+    const [isQuickReplyMode, setIsQuickReplyMode] = useState(false);
+    const [quickReplyButtons, setQuickReplyButtons] = useState<string[]>(["Yes", "No"]);
+    const [isSendingQuickReply, setIsSendingQuickReply] = useState(false);
 
     const onEmojiClick = (emojiData: EmojiClickData) => {
         setMessageInput(prev => prev + emojiData.emoji);
@@ -268,6 +273,31 @@ export default function ChatClient({
         if (!result.success) {
             toast.error(result.error || "Failed to send message");
             setMessages(prev => prev.filter(m => m.id !== tempId));
+        }
+    };
+
+    const handleSendQuickReply = async () => {
+        if (!messageInput.trim() || !selectedContact) return;
+        const validButtons = quickReplyButtons.filter(b => b.trim());
+        if (validButtons.length === 0) {
+            toast.error("Add at least one button label");
+            return;
+        }
+
+        setIsSendingQuickReply(true);
+        const result = await sendInteractiveMessageAction(selectedContact.id, messageInput, validButtons);
+        setIsSendingQuickReply(false);
+
+        if (result.success) {
+            toast.success("Quick reply sent!");
+            setMessageInput("");
+            setIsQuickReplyMode(false);
+            setQuickReplyButtons(["Yes", "No"]);
+            fetch(`/api/messages?contactId=${selectedContact.id}`)
+                .then(r => r.json())
+                .then(msgs => setMessages(msgs));
+        } else {
+            toast.error(result.error || "Failed to send");
         }
     };
 
@@ -877,7 +907,8 @@ export default function ChatClient({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="max-w-4xl mx-auto relative group">
+                                <div className="flex flex-col gap-2">
+                                <div className="max-w-4xl mx-auto relative group w-full">
                                     <Input
                                         ref={inputRef}
                                         placeholder="Communicate with precision..."
@@ -916,6 +947,22 @@ export default function ChatClient({
                                                 <Paperclip className="w-5 h-5" />
                                             )}
                                         </Button>
+                                        {/* Quick reply toggle — only in 24hr window */}
+                                        {isWindowOpen(selectedContact?.lastIncomingAt) && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => setIsQuickReplyMode(v => !v)}
+                                                className={`h-8 w-8 md:h-10 md:w-10 rounded-xl transition-all active:scale-90 ${
+                                                    isQuickReplyMode
+                                                        ? "bg-primary/10 text-primary"
+                                                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                                }`}
+                                                title="Quick Reply Buttons"
+                                            >
+                                                <MousePointer2 className="w-4 h-4" />
+                                            </Button>
+                                        )}
                                         <input
                                             type="file"
                                             ref={fileInputRef}
@@ -935,13 +982,78 @@ export default function ChatClient({
 
                                         <Button
                                             size="icon"
-                                            onClick={handleSendMessage}
-                                            disabled={!messageInput.trim()}
+                                            onClick={isQuickReplyMode ? handleSendQuickReply : handleSendMessage}
+                                            disabled={!messageInput.trim() || isSendingQuickReply}
                                             className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground shadow-glow active:scale-90 transition-all shrink-0"
                                         >
-                                            <Send className="w-5 h-5 stroke-[4px]" />
+                                            {isSendingQuickReply ? (
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <Send className="w-5 h-5 stroke-[4px]" />
+                                            )}
                                         </Button>
                                     </div>
+                                </div>
+
+                                {/* Quick Reply Button Composer panel — slides up above input */}
+                                {isQuickReplyMode && (
+                                    <div className="max-w-4xl mx-auto mt-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
+                                        <div className="bg-white border border-primary/20 rounded-2xl p-4 shadow-elevated">
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <MousePointer2 className="w-4 h-4 text-primary" />
+                                                    <span className="text-xs font-black uppercase tracking-widest text-primary">Quick Reply Buttons</span>
+                                                    <span className="text-[10px] text-muted-foreground/60 font-medium">Max 3 · 20 chars each</span>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 rounded-lg text-muted-foreground hover:text-destructive"
+                                                    onClick={() => setIsQuickReplyMode(false)}
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </Button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {quickReplyButtons.map((label, idx) => (
+                                                    <div key={idx} className="flex items-center gap-1.5 bg-primary/5 border border-primary/20 rounded-xl px-3 py-1.5 group">
+                                                        <input
+                                                            value={label}
+                                                            maxLength={20}
+                                                            onChange={e => {
+                                                                const next = [...quickReplyButtons];
+                                                                next[idx] = e.target.value;
+                                                                setQuickReplyButtons(next);
+                                                            }}
+                                                            placeholder={`Button ${idx + 1}`}
+                                                            className="bg-transparent text-xs font-bold text-foreground outline-none w-[90px] placeholder:text-muted-foreground/40"
+                                                        />
+                                                        <span className="text-[9px] text-muted-foreground/50 shrink-0">{label.length}/20</span>
+                                                        {quickReplyButtons.length > 1 && (
+                                                            <button
+                                                                onClick={() => setQuickReplyButtons(prev => prev.filter((_, i) => i !== idx))}
+                                                                className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 ml-0.5"
+                                                            >
+                                                                <X className="w-3 h-3" />
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                                {quickReplyButtons.length < 3 && (
+                                                    <button
+                                                        onClick={() => setQuickReplyButtons(prev => [...prev, ""])}
+                                                        className="flex items-center gap-1.5 border border-dashed border-primary/30 rounded-xl px-3 py-1.5 text-xs font-bold text-primary/60 hover:text-primary hover:border-primary/60 hover:bg-primary/5 transition-all"
+                                                    >
+                                                        <Plus className="w-3 h-3" /> Add button
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <p className="text-[10px] text-muted-foreground/50 mt-2 font-medium">
+                                                Type your message in the input above, then hit Send ↗
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                                 </div>
                             )}
                         </div>
