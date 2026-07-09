@@ -509,7 +509,7 @@ export default function ChatClient({
                                             <select
                                                 value={selectedCountryCode}
                                                 onChange={(e) => setSelectedCountryCode(e.target.value)}
-                                                className="h-10 bg-secondary/50 border-none rounded-xl px-3 text-sm font-medium focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none shrink-0 min-w-[90px]"
+                                                className="h-10 bg-secondary/50 border-none rounded-xl px-3 text-sm font-medium focus:ring-2 focus:ring-[#00a884]/20 outline-none cursor-pointer appearance-none shrink-0 min-w-[90px]"
                                             >
                                                 {COUNTRY_CODES.map(c => (
                                                     <option key={c.code} value={c.code}>{c.label}</option>
@@ -544,7 +544,7 @@ export default function ChatClient({
                             placeholder="Search conversations..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="h-9 bg-secondary/60 border-none rounded-xl text-sm pl-9 pr-4 font-medium focus-visible:ring-primary/20"
+                            className="h-9 bg-secondary/60 border-none rounded-xl text-sm pl-9 pr-4 font-medium focus-visible:ring-[#00a884]/20"
                         />
                     </div>
                 </div>
@@ -575,7 +575,7 @@ export default function ChatClient({
                                         <Avatar className="h-11 w-11 rounded-full">
                                             <AvatarFallback className={`text-sm font-bold rounded-full ${
                                                 selectedContact?.id === contact.id
-                                                    ? "bg-primary/20 text-primary"
+                                                    ? "bg-[#00a884]/20 text-[#00a884]"
                                                     : "bg-secondary text-muted-foreground"
                                             }`}>
                                                 {contact.name[0].toUpperCase()}
@@ -593,19 +593,19 @@ export default function ChatClient({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-baseline justify-between gap-2">
                                             <p className={`text-[13.5px] font-semibold truncate ${
-                                                selectedContact?.id === contact.id ? "text-primary" : "text-foreground"
+                                                selectedContact?.id === contact.id ? "text-[#00a884]" : "text-foreground"
                                             }`}>{contact.name}</p>
                                             <span className="text-[11px] text-muted-foreground/60 shrink-0">{contact.time}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             <p className="text-[12.5px] text-muted-foreground/70 truncate leading-tight flex-1">
                                                 {!contact.assignedToId
-                                                    ? <span className="text-primary/60 font-medium text-xs">Unattended</span>
+                                                    ? <span className="text-[#00a884]/60 font-medium text-xs">Unattended</span>
                                                     : (contact.lastMessage || "No messages yet")
                                                 }
                                             </p>
                                             {contact.unread > 0 && (
-                                                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full shrink-0">
+                                                <span className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1.5 bg-[#00a884] text-white text-[10px] font-bold rounded-full shrink-0">
                                                     {contact.unread}
                                                 </span>
                                             )}
@@ -633,6 +633,9 @@ export default function ChatClient({
 
             {/* Column 3: Chat Window */}
             <div className={`flex-1 flex-col bg-[#efeae2] relative min-h-0 overflow-hidden ${isMobileChatOpen ? 'flex' : 'hidden md:flex'}`}>
+                {/* WA Background Pattern */}
+                <div className="absolute inset-0 z-0 opacity-[0.06] pointer-events-none" style={{ backgroundImage: 'url("/wa-bg.png")', backgroundRepeat: 'repeat', backgroundSize: '400px' }}></div>
+                
                 {selectedContact ? (
                     <>
                         {/* Chat Header */}
@@ -647,7 +650,7 @@ export default function ChatClient({
                                     <ArrowLeft className="w-6 h-6" />
                                 </Button>
                                 <Avatar className="h-10 w-10 rounded-full shrink-0">
-                                    <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">{selectedContact.name[0]}</AvatarFallback>
+                                    <AvatarFallback className="bg-[#00a884]/10 text-[#00a884] text-lg font-medium">{selectedContact.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0">
                                     <h2 className="font-medium text-[16px] text-[#111b21] truncate">{selectedContact.name}</h2>
@@ -688,14 +691,14 @@ export default function ChatClient({
                                                         key={tag.label}
                                                         onClick={() => handleToggleTag(tag.label)}
                                                         className={`flex items-center justify-between p-4 rounded-2xl transition-all border-2 ${isActive
-                                                            ? `border-primary bg-primary/5`
+                                                            ? `border-[#00a884] bg-[#00a884]/5`
                                                             : 'border-transparent bg-secondary/30 hover:bg-secondary/50'}`}
                                                     >
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-3 h-3 rounded-full ${tag.color}`} />
                                                             <span className="font-black uppercase tracking-widest text-xs text-foreground">{tag.label}</span>
                                                         </div>
-                                                        {isActive && <Check className="w-4 h-4 text-primary stroke-[4px]" />}
+                                                        {isActive && <Check className="w-4 h-4 text-[#00a884] stroke-[4px]" />}
                                                     </button>
                                                 );
                                             })}
@@ -746,7 +749,7 @@ export default function ChatClient({
                                 {(isAdmin || selectedContact.assignedToId === currentUser.id) && (
                                     <div className="relative shrink-0 hidden md:block">
                                         <select
-                                            className="h-10 md:h-12 w-10 md:min-w-[160px] lg:min-w-[200px] rounded-xl md:rounded-2xl bg-secondary/50 border-none md:pl-6 md:pr-12 text-transparent md:text-[10px] text-center md:text-left font-black uppercase tracking-widest md:text-foreground focus:ring-2 focus:ring-primary/20 outline-none cursor-pointer appearance-none transition-all hover:bg-secondary truncate"
+                                            className="h-10 md:h-12 w-10 md:min-w-[160px] lg:min-w-[200px] rounded-xl md:rounded-2xl bg-secondary/50 border-none md:pl-6 md:pr-12 text-transparent md:text-[10px] text-center md:text-left font-black uppercase tracking-widest md:text-foreground focus:ring-2 focus:ring-[#00a884]/20 outline-none cursor-pointer appearance-none transition-all hover:bg-secondary truncate"
                                             value={selectedContact.assignedToId || ""}
                                             onChange={(e) => handleAssign(selectedContact.id, e.target.value || null)}
                                         >
@@ -767,11 +770,11 @@ export default function ChatClient({
                                 {isLoadingMessages ? (
                                     <div className="flex flex-col items-center justify-center py-20 gap-4">
                                         <div className="flex gap-2">
-                                            <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-                                            <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-                                            <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce" />
+                                            <div className="w-2.5 h-2.5 bg-[#00a884] rounded-full animate-bounce [animation-delay:-0.3s]" />
+                                            <div className="w-2.5 h-2.5 bg-[#00a884] rounded-full animate-bounce [animation-delay:-0.15s]" />
+                                            <div className="w-2.5 h-2.5 bg-[#00a884] rounded-full animate-bounce" />
                                         </div>
-                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Establishing Secure Sync</p>
+                                        <p className="text-[10px] font-black uppercase tracking-[0.4em] text-[#00a884]/60">Establishing Secure Sync</p>
                                     </div>
                                 ) : (
                                     messages.map((msg, index) => {
@@ -811,8 +814,8 @@ export default function ChatClient({
                                                         </div>
                                                     ) : msg.mediaType === 'document' ? (
                                                         <div className={`flex items-center gap-3 py-1 px-1 rounded-xl ${msg.direction === 'OUTGOING' ? 'bg-white/10' : 'bg-secondary/30'}`}>
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-primary/10'}`}>
-                                                                <Paperclip className={`w-5 h-5 ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-primary'}`} />
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-[#00a884]/10'}`}>
+                                                                <Paperclip className={`w-5 h-5 ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-[#00a884]'}`} />
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <p className="font-bold truncate text-sm leading-tight">{msg.text}</p>
@@ -823,15 +826,15 @@ export default function ChatClient({
                                                         </div>
                                                     ) : msg.mediaType === 'audio' ? (
                                                         <div className={`flex items-center gap-3 py-1 px-1 rounded-xl ${msg.direction === 'OUTGOING' ? 'bg-white/10' : 'bg-secondary/30'}`}>
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-primary/10'}`}>
-                                                                <span className={`text-xl ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-primary'}`}>🎵</span>
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-[#00a884]/10'}`}>
+                                                                <span className={`text-xl ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-[#00a884]'}`}>🎵</span>
                                                             </div>
                                                             <p className="font-bold truncate text-sm">{msg.text}</p>
                                                         </div>
                                                     ) : msg.mediaType === 'video' ? (
                                                         <div className={`flex items-center gap-3 py-1 px-1 rounded-xl ${msg.direction === 'OUTGOING' ? 'bg-white/10' : 'bg-secondary/30'}`}>
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-primary/10'}`}>
-                                                                <span className={`text-xl ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-primary'}`}>🎬</span>
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${msg.direction === 'OUTGOING' ? 'bg-white/20' : 'bg-[#00a884]/10'}`}>
+                                                                <span className={`text-xl ${msg.direction === 'OUTGOING' ? 'text-white' : 'text-[#00a884]'}`}>🎬</span>
                                                             </div>
                                                             <p className="font-bold truncate text-sm">{msg.text}</p>
                                                         </div>
@@ -916,9 +919,9 @@ export default function ChatClient({
                         <div className="p-3 md:p-4 bg-[#f0f2f5] border-t border-[#d1d7db] shrink-0 relative">
                             {!selectedContact.assignedToId ? (
                                 <div className="max-w-4xl mx-auto">
-                                    <div className="flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-md rounded-[2.5rem] border-2 border-dashed border-primary/20 shadow-premium gap-4 animate-in zoom-in-95">
-                                        <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
-                                            <UserPlus className="w-8 h-8 text-primary" />
+                                    <div className="flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-md rounded-[2.5rem] border-2 border-dashed border-[#00a884]/20 shadow-premium gap-4 animate-in zoom-in-95">
+                                        <div className="w-16 h-16 bg-[#00a884]/10 rounded-2xl flex items-center justify-center">
+                                            <UserPlus className="w-8 h-8 text-[#00a884]" />
                                         </div>
                                         <div className="text-center">
                                             <h4 className="font-black text-xl tracking-tighter text-foreground">Communication Locked</h4>
@@ -926,7 +929,7 @@ export default function ChatClient({
                                         </div>
                                         <Button
                                             onClick={() => handleAssign(selectedContact.id, currentUser.id)}
-                                            className="bg-primary text-primary-foreground font-black uppercase tracking-widest px-10 h-14 rounded-2xl shadow-glow active:scale-95 transition-all mt-2"
+                                            className="bg-[#00a884] text-white font-black uppercase tracking-widest px-10 h-14 rounded-2xl shadow-glow active:scale-95 transition-all mt-2"
                                         >
                                             Attend Conversation
                                         </Button>
@@ -968,7 +971,7 @@ export default function ChatClient({
                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-1">
                                         <Popover>
                                             <PopoverTrigger asChild>
-                                                <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-primary transition-all">
+                                                <Button variant="ghost" size="icon" className="rounded-xl h-8 w-8 md:h-10 md:w-10 text-muted-foreground hover:text-[#00a884] transition-all">
                                                     <Smile className="w-5 h-5" />
                                                 </Button>
                                             </PopoverTrigger>
@@ -987,10 +990,10 @@ export default function ChatClient({
                                             size="icon"
                                             onClick={handleAttachmentClick}
                                             disabled={isUploading}
-                                            className="h-8 w-8 md:h-10 md:w-10 rounded-xl hover:bg-primary/5 text-muted-foreground transition-all active:scale-90 disabled:opacity-50"
+                                            className="h-8 w-8 md:h-10 md:w-10 rounded-xl hover:bg-[#00a884]/5 text-muted-foreground transition-all active:scale-90 disabled:opacity-50"
                                         >
                                             {isUploading ? (
-                                                <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                                <div className="w-4 h-4 border-2 border-[#00a884]/30 border-t-primary rounded-full animate-spin" />
                                             ) : (
                                                 <Paperclip className="w-5 h-5" />
                                             )}
@@ -1003,8 +1006,8 @@ export default function ChatClient({
                                                 onClick={() => setIsQuickReplyMode(v => !v)}
                                                 className={`h-8 w-8 md:h-10 md:w-10 rounded-xl transition-all active:scale-90 ${
                                                     isQuickReplyMode
-                                                        ? "bg-primary/10 text-primary"
-                                                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                                                        ? "bg-[#00a884]/10 text-[#00a884]"
+                                                        : "text-muted-foreground hover:text-[#00a884] hover:bg-[#00a884]/5"
                                                 }`}
                                                 title="Quick Reply Buttons"
                                             >
@@ -1023,7 +1026,7 @@ export default function ChatClient({
                                             variant="ghost"
                                             size="icon"
                                             onClick={handleOpenTemplates}
-                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl hover:bg-primary/5 text-primary transition-all active:scale-90 group"
+                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl hover:bg-[#00a884]/5 text-[#00a884] transition-all active:scale-90 group"
                                         >
                                             <Zap className="w-5 h-5 fill-primary/10 group-hover:fill-primary/20 transition-all" />
                                         </Button>
@@ -1032,7 +1035,7 @@ export default function ChatClient({
                                             size="icon"
                                             onClick={isQuickReplyMode ? handleSendQuickReply : handleSendMessage}
                                             disabled={!messageInput.trim() || isSendingQuickReply}
-                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-primary text-primary-foreground shadow-glow active:scale-90 transition-all shrink-0"
+                                            className="h-10 w-10 md:h-12 md:w-12 rounded-xl bg-[#00a884] text-white shadow-glow active:scale-90 transition-all shrink-0"
                                         >
                                             {isSendingQuickReply ? (
                                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -1046,16 +1049,16 @@ export default function ChatClient({
                                 {/* Quick Reply Button Composer panel — slides up above input */}
                                 {isQuickReplyMode && (
                                     <div className="max-w-4xl mx-auto mt-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
-                                        <div className="bg-white border border-primary/20 rounded-2xl p-4 shadow-elevated">
+                                        <div className="bg-white border border-[#00a884]/20 rounded-2xl p-4 shadow-elevated">
                                             <div className="flex items-center justify-between mb-3 border-b border-border/50 pb-2">
                                                 <div className="flex items-center gap-4">
-                                                    <button onClick={() => setInteractiveTab("reply")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'reply' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                    <button onClick={() => setInteractiveTab("reply")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'reply' ? 'text-[#00a884]' : 'text-muted-foreground/60 hover:text-foreground'}`}>
                                                         <MousePointer2 className="w-3.5 h-3.5" /> Replies
                                                     </button>
-                                                    <button onClick={() => setInteractiveTab("url")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'url' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                    <button onClick={() => setInteractiveTab("url")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'url' ? 'text-[#00a884]' : 'text-muted-foreground/60 hover:text-foreground'}`}>
                                                         <LinkIcon className="w-3.5 h-3.5" /> Visit Link
                                                     </button>
-                                                    <button onClick={() => setInteractiveTab("call")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'call' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                    <button onClick={() => setInteractiveTab("call")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'call' ? 'text-[#00a884]' : 'text-muted-foreground/60 hover:text-foreground'}`}>
                                                         <Phone className="w-3.5 h-3.5" /> Call Now
                                                     </button>
                                                 </div>
@@ -1073,7 +1076,7 @@ export default function ChatClient({
                                                 <div className="flex flex-col gap-2 mt-2">
                                                     <div className="flex flex-wrap gap-2">
                                                         {quickReplyButtons.map((label, idx) => (
-                                                            <div key={idx} className="flex items-center gap-1.5 bg-primary/5 border border-primary/20 rounded-xl px-3 py-1.5 group">
+                                                            <div key={idx} className="flex items-center gap-1.5 bg-[#00a884]/5 border border-[#00a884]/20 rounded-xl px-3 py-1.5 group">
                                                                 <input
                                                                     value={label}
                                                                     maxLength={20}
@@ -1099,7 +1102,7 @@ export default function ChatClient({
                                                         {quickReplyButtons.length < 3 && (
                                                             <button
                                                                 onClick={() => setQuickReplyButtons(prev => [...prev, ""])}
-                                                                className="flex items-center gap-1.5 border border-dashed border-primary/30 rounded-xl px-3 py-1.5 text-xs font-bold text-primary/60 hover:text-primary hover:border-primary/60 hover:bg-primary/5 transition-all"
+                                                                className="flex items-center gap-1.5 border border-dashed border-[#00a884]/30 rounded-xl px-3 py-1.5 text-xs font-bold text-[#00a884]/60 hover:text-[#00a884] hover:border-[#00a884]/60 hover:bg-[#00a884]/5 transition-all"
                                                             >
                                                                 <Plus className="w-3 h-3" /> Add button
                                                             </button>
@@ -1109,7 +1112,7 @@ export default function ChatClient({
                                             )}
 
                                             {interactiveTab === "url" && (
-                                                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl p-1.5 mt-2">
+                                                <div className="flex items-center gap-2 bg-[#00a884]/5 border border-[#00a884]/20 rounded-xl p-1.5 mt-2">
                                                     <input
                                                         value={urlButtonText}
                                                         maxLength={20}
@@ -1127,7 +1130,7 @@ export default function ChatClient({
                                             )}
 
                                             {interactiveTab === "call" && (
-                                                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl p-1.5 mt-2">
+                                                <div className="flex items-center gap-2 bg-[#00a884]/5 border border-[#00a884]/20 rounded-xl p-1.5 mt-2">
                                                     <input
                                                         value={callButtonText}
                                                         maxLength={20}
@@ -1165,8 +1168,8 @@ export default function ChatClient({
                                 {selectedTemplate ? (
                                     <div className="flex flex-col h-full overflow-hidden">
                                         <div className="flex-1 space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
-                                            <div className="p-4 bg-secondary/10 rounded-xl border border-primary/5">
-                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 mb-2">Preview</h4>
+                                            <div className="p-4 bg-secondary/10 rounded-xl border border-[#00a884]/5">
+                                                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00a884]/40 mb-2">Preview</h4>
                                                 <p className="text-sm font-medium text-foreground/80 leading-relaxed">
                                                     {(() => {
                                                         let text = (selectedTemplate.components as any[]).find(c => c.type === 'BODY')?.text || "";
@@ -1183,7 +1186,7 @@ export default function ChatClient({
                                                 <div className="grid grid-cols-1 gap-3">
                                                     {templateParams.map((param, idx) => (
                                                         <div key={idx} className="relative flex items-center gap-3">
-                                                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary shrink-0">
+                                                            <div className="w-7 h-7 rounded-lg bg-[#00a884]/10 flex items-center justify-center text-[10px] font-black text-[#00a884] shrink-0">
                                                                 {idx + 1}
                                                             </div>
                                                             <Input
@@ -1194,7 +1197,7 @@ export default function ChatClient({
                                                                     newParams[idx] = e.target.value;
                                                                     setTemplateParams(newParams);
                                                                 }}
-                                                                className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-primary/20 text-sm"
+                                                                className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-[#00a884]/20 text-sm"
                                                             />
                                                         </div>
                                                     ))}
@@ -1203,7 +1206,7 @@ export default function ChatClient({
 
                                             {hasCopyCode && (
                                                 <div className="space-y-1.5 pt-3 border-t border-border/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/60">Button Copy Code Value</label>
+                                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#00a884]/60">Button Copy Code Value</label>
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-7 h-7 rounded-lg bg-green-500/10 flex items-center justify-center text-[10px] font-black text-green-600 shrink-0">
                                                             ⚓
@@ -1212,7 +1215,7 @@ export default function ChatClient({
                                                             placeholder="e.g. SAVE20"
                                                             value={copyCodeValue}
                                                             onChange={(e) => setCopyCodeValue(e.target.value)}
-                                                            className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-primary/20 text-sm"
+                                                            className="h-10 bg-secondary/30 border-none rounded-xl font-bold text-foreground focus-visible:ring-[#00a884]/20 text-sm"
                                                         />
                                                     </div>
                                                     <p className="text-[9px] text-muted-foreground/60 font-medium">This code will be copied to the clipboard when the customer taps the copy button.</p>
@@ -1233,7 +1236,7 @@ export default function ChatClient({
                                             </Button>
                                             <Button
                                                 onClick={handleSendTemplate}
-                                                className="flex-[2] h-10 rounded-xl bg-primary text-primary-foreground font-black uppercase tracking-widest shadow-glow active:scale-95 transition-all text-xs"
+                                                className="flex-[2] h-10 rounded-xl bg-[#00a884] text-white font-black uppercase tracking-widest shadow-glow active:scale-95 transition-all text-xs"
                                             >
                                                 Send Template
                                             </Button>
@@ -1244,8 +1247,8 @@ export default function ChatClient({
                                         <div className="flex flex-col gap-2 py-2">
                                             {isLoadingTemplates ? (
                                                 <div className="py-12 text-center">
-                                                    <div className="inline-block w-6 h-6 border-4 border-primary/20 border-t-primary rounded-full animate-spin mb-3" />
-                                                    <p className="text-xs font-black uppercase tracking-widest text-primary/40">Loading…</p>
+                                                    <div className="inline-block w-6 h-6 border-4 border-[#00a884]/20 border-t-primary rounded-full animate-spin mb-3" />
+                                                    <p className="text-xs font-black uppercase tracking-widest text-[#00a884]/40">Loading…</p>
                                                 </div>
                                             ) : templates.length === 0 ? (
                                                 <div className="py-12 text-center text-muted-foreground font-bold text-sm italic">
@@ -1285,14 +1288,14 @@ export default function ChatClient({
                                                                 setTemplateParams([]);
                                                             }
                                                         }}
-                                                        className="group flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-primary/15 hover:bg-primary/5 transition-all cursor-pointer"
+                                                        className="group flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-[#00a884]/15 hover:bg-[#00a884]/5 transition-all cursor-pointer"
                                                     >
-                                                        <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-primary group-hover:text-white transition-all">
-                                                            <Zap className="w-4 h-4 text-primary group-hover:text-white transition-all" />
+                                                        <div className="w-8 h-8 bg-[#00a884]/10 rounded-lg flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-[#00a884] group-hover:text-white transition-all">
+                                                            <Zap className="w-4 h-4 text-[#00a884] group-hover:text-white transition-all" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <div className="flex items-center gap-2 mb-0.5">
-                                                                <h4 className="font-black text-sm text-foreground group-hover:text-primary transition-colors truncate">{tpl.name}</h4>
+                                                                <h4 className="font-black text-sm text-foreground group-hover:text-[#00a884] transition-colors truncate">{tpl.name}</h4>
                                                                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/40 shrink-0">{tpl.language}</span>
                                                             </div>
                                                             <p className="text-xs text-muted-foreground/70 leading-relaxed line-clamp-2">
@@ -1301,7 +1304,7 @@ export default function ChatClient({
                                                             {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.length > 0 && (
                                                                 <div className="flex flex-wrap gap-1 mt-1.5">
                                                                     {(tpl.components as any[]).find(c => c.type === 'BUTTONS')?.buttons?.map((btn: any, i: number) => (
-                                                                        <span key={i} className="px-2 py-0.5 bg-primary/5 border border-primary/10 rounded-full text-[9px] font-black uppercase text-primary/60 flex items-center gap-1">
+                                                                        <span key={i} className="px-2 py-0.5 bg-[#00a884]/5 border border-[#00a884]/10 rounded-full text-[9px] font-black uppercase text-[#00a884]/60 flex items-center gap-1">
                                                                             {btn.type === 'COPY_CODE' ? <Check className="w-2.5 h-2.5" /> : btn.type === 'URL' ? <LinkIcon className="w-2.5 h-2.5" /> : <MousePointer2 className="w-2.5 h-2.5" />}
                                                                             {btn.type === 'COPY_CODE' ? `Copy: ${btn.example || 'Code'}` : btn.text}
                                                                         </span>
@@ -1309,7 +1312,7 @@ export default function ChatClient({
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary shrink-0 mt-1 transition-colors" />
+                                                        <ChevronRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-[#00a884] shrink-0 mt-1 transition-colors" />
                                                     </div>
                                                 ))
                                             )}
@@ -1321,9 +1324,9 @@ export default function ChatClient({
                     </>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center p-20 gap-10">
-                        <div className="w-48 h-48 bg-primary/5 rounded-[4.5rem] flex items-center justify-center ring-2 ring-primary/5 shadow-glow animate-in zoom-in-75 duration-1000 relative">
-                            <Zap className="w-20 h-20 text-primary/10" />
-                            <div className="absolute inset-0 bg-primary/5 rounded-[4.5rem] animate-ping duration-[3000ms]" />
+                        <div className="w-48 h-48 bg-[#00a884]/5 rounded-[4.5rem] flex items-center justify-center ring-2 ring-primary/5 shadow-glow animate-in zoom-in-75 duration-1000 relative">
+                            <Zap className="w-20 h-20 text-[#00a884]/10" />
+                            <div className="absolute inset-0 bg-[#00a884]/5 rounded-[4.5rem] animate-ping duration-[3000ms]" />
                         </div>
                         <div className="text-center space-y-4">
                             <h3 className="text-6xl font-black tracking-tighter text-foreground bg-gradient-to-b from-foreground to-foreground/40 bg-clip-text text-transparent">Select Desk</h3>
