@@ -3,6 +3,7 @@ import { db } from "@/lib/firebase";
 import { collection, doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { uploadMedia, sendMedia } from "@/lib/whatsapp";
 import { auth } from "@/auth";
+import sharp from "sharp";
 
 export const dynamic = "force-dynamic";
 
@@ -79,9 +80,27 @@ export async function POST(req: NextRequest) {
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
+        let buffer = Buffer.from(arrayBuffer);
+        let uploadMimeType = mimeType;
+        let uploadFilename = filename;
 
-        const uploadResult = await uploadMedia(buffer, mimeType, filename);
+        // WhatsApp error 131053: fails to deliver CMYK or progressive JPEGs.
+        // Convert ALL uploaded images to RGB baseline JPEG before uploading.
+        if (mediaType === 'image') {
+            try {
+                buffer = await sharp(buffer)
+                    .jpeg({ quality: 90, progressive: false, chromaSubsampling: '4:2:0' })
+                    .toBuffer();
+                uploadMimeType = 'image/jpeg';
+                uploadFilename = filename.replace(/\.[^.]+$/, '.jpg') || 'image.jpg';
+                console.log('[Upload] Image converted to RGB JPEG:', uploadFilename, 'size:', buffer.length);
+            } catch (convErr) {
+                console.warn('[Upload] Image conversion failed, uploading original:', convErr);
+                // Fall back to original buffer if sharp fails
+            }
+        }
+
+        const uploadResult = await uploadMedia(buffer, uploadMimeType, uploadFilename);
         console.log('[Upload] uploadMedia raw result:', JSON.stringify(uploadResult));
         const mediaId = uploadResult?.id;
         console.log('[Upload] mediaId:', mediaId, '| type:', typeof mediaId, '| mimeType sent:', mimeType, '| fileSize:', file.size);
