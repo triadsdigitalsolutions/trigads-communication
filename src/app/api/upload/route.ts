@@ -40,9 +40,43 @@ export async function POST(req: NextRequest) {
         }
         const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
 
-        const mimeType = file.type || "application/octet-stream";
+        /** Normalize MIME type — browsers sometimes report image/jpg which WhatsApp rejects */
+        function normalizeMimeType(rawType: string, filename: string): string {
+            // Non-standard alias: image/jpg → image/jpeg
+            if (rawType === "image/jpg") return "image/jpeg";
+            // If browser gave no type, infer from file extension
+            if (!rawType || rawType === "application/octet-stream") {
+                const ext = filename.split(".").pop()?.toLowerCase();
+                const extMap: Record<string, string> = {
+                    jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png",
+                    gif: "image/gif", webp: "image/webp",
+                    mp4: "video/mp4", mov: "video/quicktime",
+                    mp3: "audio/mpeg", ogg: "audio/ogg", m4a: "audio/mp4",
+                    pdf: "application/pdf",
+                };
+                return ext && extMap[ext] ? extMap[ext] : "application/octet-stream";
+            }
+            return rawType;
+        }
+
+        const mimeType = normalizeMimeType(file.type, file.name);
         const filename = file.name;
         const mediaType = getMediaType(mimeType);
+
+        // WhatsApp enforces per-type size limits (smaller than 16MB general limit)
+        const WA_SIZE_LIMITS: Record<string, number> = {
+            image: 5 * 1024 * 1024,    // 5 MB
+            video: 16 * 1024 * 1024,   // 16 MB
+            audio: 16 * 1024 * 1024,   // 16 MB
+            document: 100 * 1024 * 1024, // 100 MB
+        };
+        const sizeLimit = WA_SIZE_LIMITS[mediaType] ?? MAX_SIZE;
+        if (file.size > sizeLimit) {
+            return NextResponse.json(
+                { error: `File too large for ${mediaType}. WhatsApp limit is ${sizeLimit / 1024 / 1024}MB.` },
+                { status: 413 }
+            );
+        }
 
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
