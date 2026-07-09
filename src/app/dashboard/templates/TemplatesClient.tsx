@@ -75,9 +75,27 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
             if (formData.headerType === "TEXT" && !formData.headerText) { toast.error("Header text is required"); return; }
             setIsSubmitting(true);
         const components: any[] = [];
-        if (formData.headerType === "TEXT") components.push({ type: "HEADER", format: "TEXT", text: formData.headerText });
-        if (formData.headerType === "IMAGE") components.push({ type: "HEADER", format: "IMAGE" });
-        components.push({ type: "BODY", text: formData.body });
+        if (formData.headerType === "TEXT") {
+            const headerVars = formData.headerText.match(/\{\{\d+\}\}/g);
+            const headerComponent: any = { type: "HEADER", format: "TEXT", text: formData.headerText };
+            if (headerVars && headerVars.length > 0) {
+                headerComponent.example = { header_text: headerVars.map((_, i) => `HeaderVar${i + 1}`) };
+            }
+            components.push(headerComponent);
+        }
+        if (formData.headerType === "IMAGE") {
+            toast.error("Image headers currently require a sample media handle from Meta. Please use TEXT or NONE for now.");
+            setIsSubmitting(false);
+            return;
+        }
+
+        const bodyVars = formData.body.match(/\{\{\d+\}\}/g);
+        const bodyComponent: any = { type: "BODY", text: formData.body };
+        if (bodyVars && bodyVars.length > 0) {
+            bodyComponent.example = { body_text: [bodyVars.map((_, i) => `BodyVar${i + 1}`)] };
+        }
+        components.push(bodyComponent);
+
         if (formData.footer) components.push({ type: "FOOTER", text: formData.footer });
         
         if (formData.buttons.length) {
@@ -85,7 +103,7 @@ export default function TemplatesClient({ initialTemplates }: { initialTemplates
                 if (btn.type === "COPY_CODE") {
                     return {
                         type: "COPY_CODE",
-                        example: btn.example || "PROMO15"
+                        example: [btn.example || "PROMO15"]
                     };
                 }
                 if (btn.type === "URL") {
