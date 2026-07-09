@@ -81,7 +81,14 @@ export async function POST(req: NextRequest) {
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const { id: mediaId } = await uploadMedia(buffer, mimeType, filename);
+        const uploadResult = await uploadMedia(buffer, mimeType, filename);
+        console.log('[Upload] uploadMedia raw result:', JSON.stringify(uploadResult));
+        const mediaId = uploadResult?.id;
+        console.log('[Upload] mediaId:', mediaId, '| type:', typeof mediaId, '| mimeType sent:', mimeType, '| fileSize:', file.size);
+
+        if (!mediaId) {
+            throw new Error(`WhatsApp media upload returned no ID. Raw: ${JSON.stringify(uploadResult)}`);
+        }
 
         const messageRef = doc(collection(db, "messages"));
         await setDoc(messageRef, {
@@ -101,6 +108,7 @@ export async function POST(req: NextRequest) {
         });
 
         try {
+            console.log('[Upload] Calling sendMedia with phone:', contact.phone, '| mediaId:', mediaId, '| mediaType:', mediaType);
             const response = await sendMedia(contact.phone, mediaId, mediaType, filename, caption);
             const metaMessageId = response.messages?.[0]?.id;
 

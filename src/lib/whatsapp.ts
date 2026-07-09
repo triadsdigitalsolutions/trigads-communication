@@ -201,15 +201,18 @@ export async function sendMedia(
     mediaObject.caption = caption;
   }
 
+  const requestBody = JSON.stringify({
+    messaging_product: 'whatsapp',
+    recipient_type: 'individual',
+    to,
+    type: mediaType,
+    [mediaType]: mediaObject,
+  });
+  console.log('[sendMedia] mediaObject:', JSON.stringify(mediaObject), '| requestBody:', requestBody);
+
   return whatsappFetch('messages', {
     method: 'POST',
-    body: JSON.stringify({
-      messaging_product: 'whatsapp',
-      recipient_type: 'individual',
-      to,
-      type: mediaType,
-      [mediaType]: mediaObject,
-    }),
+    body: requestBody,
   });
 }
 
