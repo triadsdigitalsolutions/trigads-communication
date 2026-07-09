@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft, List, ChevronRight } from "lucide-react";
+import { Search, Send, MoreVertical, Paperclip, Check, CheckCheck, UserPlus, User as UserIcon, Plus, Layout, MousePointer2, LinkIcon, Zap, AlertCircle, Tag, X, Trash2, Smile, Clock, ArrowLeft, List, ChevronRight, Phone } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import EmojiPicker, { EmojiClickData, Theme } from 'emoji-picker-react';
 import { Button } from "@/components/ui/button";
@@ -126,9 +126,14 @@ export default function ChatClient({
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
 
-    // Quick Reply Button state
+    // Quick Reply / Interactive Message state
     const [isQuickReplyMode, setIsQuickReplyMode] = useState(false);
+    const [interactiveTab, setInteractiveTab] = useState<"reply" | "url" | "call">("reply");
     const [quickReplyButtons, setQuickReplyButtons] = useState<string[]>(["Yes", "No"]);
+    const [urlButtonText, setUrlButtonText] = useState("Visit Website");
+    const [urlButtonLink, setUrlButtonLink] = useState("https://");
+    const [callButtonText, setCallButtonText] = useState("Call Now");
+    const [callButtonPhone, setCallButtonPhone] = useState("+91");
     const [isSendingQuickReply, setIsSendingQuickReply] = useState(false);
 
     const onEmojiClick = (emojiData: EmojiClickData) => {
@@ -278,18 +283,39 @@ export default function ChatClient({
 
     const handleSendQuickReply = async () => {
         if (!messageInput.trim() || !selectedContact) return;
-        const validButtons = quickReplyButtons.filter(b => b.trim());
-        if (validButtons.length === 0) {
-            toast.error("Add at least one button label");
-            return;
+
+        let payload: any = { type: interactiveTab };
+        
+        if (interactiveTab === "reply") {
+            const validButtons = quickReplyButtons.filter(b => b.trim());
+            if (validButtons.length === 0) {
+                toast.error("Add at least one button label");
+                return;
+            }
+            payload.buttons = validButtons;
+        } else if (interactiveTab === "url") {
+            if (!urlButtonText.trim() || !urlButtonLink.trim()) {
+                toast.error("Button text and URL are required");
+                return;
+            }
+            payload.urlButton = { text: urlButtonText, url: urlButtonLink };
+        } else if (interactiveTab === "call") {
+            if (!callButtonText.trim() || !callButtonPhone.trim()) {
+                toast.error("Button text and Phone are required");
+                return;
+            }
+            payload.callButton = { text: callButtonText, phone: callButtonPhone };
         }
 
         setIsSendingQuickReply(true);
-        const result = await sendInteractiveMessageAction(selectedContact.id, messageInput, validButtons);
+        const interactiveType = interactiveTab === "url" ? "cta_url" : (interactiveTab === "call" ? "cta_call" : "reply");
+        payload.type = interactiveType;
+
+        const result = await sendInteractiveMessageAction(selectedContact.id, messageInput, payload);
         setIsSendingQuickReply(false);
 
         if (result.success) {
-            toast.success("Quick reply sent!");
+            toast.success("Message sent!");
             setMessageInput("");
             setIsQuickReplyMode(false);
             setQuickReplyButtons(["Yes", "No"]);
@@ -820,6 +846,24 @@ export default function ChatClient({
                                                             ))}
                                                         </div>
                                                     )}
+
+                                                    {msg.interactive && msg.interactive.type === 'cta_url' && (
+                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
+                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                                <LinkIcon className="w-4 h-4 inline-block mr-2" />
+                                                                {msg.interactive.action?.parameters?.display_text || 'Visit Link'}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {msg.interactive && msg.interactive.type === 'cta_call' && (
+                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
+                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                                <Phone className="w-4 h-4 inline-block mr-2" />
+                                                                {msg.interactive.action?.parameters?.display_text || 'Call Now'}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     
                                                     {msg.interactive && msg.interactive.type === 'list' && (
                                                         <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
@@ -999,11 +1043,17 @@ export default function ChatClient({
                                 {isQuickReplyMode && (
                                     <div className="max-w-4xl mx-auto mt-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
                                         <div className="bg-white border border-primary/20 rounded-2xl p-4 shadow-elevated">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <MousePointer2 className="w-4 h-4 text-primary" />
-                                                    <span className="text-xs font-black uppercase tracking-widest text-primary">Quick Reply Buttons</span>
-                                                    <span className="text-[10px] text-muted-foreground/60 font-medium">Max 3 · 20 chars each</span>
+                                            <div className="flex items-center justify-between mb-3 border-b border-border/50 pb-2">
+                                                <div className="flex items-center gap-4">
+                                                    <button onClick={() => setInteractiveTab("reply")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'reply' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                        <MousePointer2 className="w-3.5 h-3.5" /> Replies
+                                                    </button>
+                                                    <button onClick={() => setInteractiveTab("url")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'url' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                        <LinkIcon className="w-3.5 h-3.5" /> Visit Link
+                                                    </button>
+                                                    <button onClick={() => setInteractiveTab("call")} className={`text-xs font-black uppercase tracking-widest flex items-center gap-1.5 transition-colors ${interactiveTab === 'call' ? 'text-primary' : 'text-muted-foreground/60 hover:text-foreground'}`}>
+                                                        <Phone className="w-3.5 h-3.5" /> Call Now
+                                                    </button>
                                                 </div>
                                                 <Button
                                                     variant="ghost"
@@ -1014,40 +1064,81 @@ export default function ChatClient({
                                                     <X className="w-3.5 h-3.5" />
                                                 </Button>
                                             </div>
-                                            <div className="flex flex-wrap gap-2">
-                                                {quickReplyButtons.map((label, idx) => (
-                                                    <div key={idx} className="flex items-center gap-1.5 bg-primary/5 border border-primary/20 rounded-xl px-3 py-1.5 group">
-                                                        <input
-                                                            value={label}
-                                                            maxLength={20}
-                                                            onChange={e => {
-                                                                const next = [...quickReplyButtons];
-                                                                next[idx] = e.target.value;
-                                                                setQuickReplyButtons(next);
-                                                            }}
-                                                            placeholder={`Button ${idx + 1}`}
-                                                            className="bg-transparent text-xs font-bold text-foreground outline-none w-[90px] placeholder:text-muted-foreground/40"
-                                                        />
-                                                        <span className="text-[9px] text-muted-foreground/50 shrink-0">{label.length}/20</span>
-                                                        {quickReplyButtons.length > 1 && (
+                                            
+                                            {interactiveTab === "reply" && (
+                                                <div className="flex flex-col gap-2 mt-2">
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {quickReplyButtons.map((label, idx) => (
+                                                            <div key={idx} className="flex items-center gap-1.5 bg-primary/5 border border-primary/20 rounded-xl px-3 py-1.5 group">
+                                                                <input
+                                                                    value={label}
+                                                                    maxLength={20}
+                                                                    onChange={e => {
+                                                                        const next = [...quickReplyButtons];
+                                                                        next[idx] = e.target.value;
+                                                                        setQuickReplyButtons(next);
+                                                                    }}
+                                                                    placeholder={`Button ${idx + 1}`}
+                                                                    className="bg-transparent text-xs font-bold text-foreground outline-none w-[90px] placeholder:text-muted-foreground/40"
+                                                                />
+                                                                <span className="text-[9px] text-muted-foreground/50 shrink-0">{label.length}/20</span>
+                                                                {quickReplyButtons.length > 1 && (
+                                                                    <button
+                                                                        onClick={() => setQuickReplyButtons(prev => prev.filter((_, i) => i !== idx))}
+                                                                        className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 ml-0.5"
+                                                                    >
+                                                                        <X className="w-3 h-3" />
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                        {quickReplyButtons.length < 3 && (
                                                             <button
-                                                                onClick={() => setQuickReplyButtons(prev => prev.filter((_, i) => i !== idx))}
-                                                                className="text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 ml-0.5"
+                                                                onClick={() => setQuickReplyButtons(prev => [...prev, ""])}
+                                                                className="flex items-center gap-1.5 border border-dashed border-primary/30 rounded-xl px-3 py-1.5 text-xs font-bold text-primary/60 hover:text-primary hover:border-primary/60 hover:bg-primary/5 transition-all"
                                                             >
-                                                                <X className="w-3 h-3" />
+                                                                <Plus className="w-3 h-3" /> Add button
                                                             </button>
                                                         )}
                                                     </div>
-                                                ))}
-                                                {quickReplyButtons.length < 3 && (
-                                                    <button
-                                                        onClick={() => setQuickReplyButtons(prev => [...prev, ""])}
-                                                        className="flex items-center gap-1.5 border border-dashed border-primary/30 rounded-xl px-3 py-1.5 text-xs font-bold text-primary/60 hover:text-primary hover:border-primary/60 hover:bg-primary/5 transition-all"
-                                                    >
-                                                        <Plus className="w-3 h-3" /> Add button
-                                                    </button>
-                                                )}
-                                            </div>
+                                                </div>
+                                            )}
+
+                                            {interactiveTab === "url" && (
+                                                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl p-1.5 mt-2">
+                                                    <input
+                                                        value={urlButtonText}
+                                                        maxLength={20}
+                                                        onChange={e => setUrlButtonText(e.target.value)}
+                                                        placeholder="Button Text"
+                                                        className="bg-white text-xs font-bold text-foreground outline-none w-[120px] px-3 py-1.5 rounded-lg border border-border"
+                                                    />
+                                                    <input
+                                                        value={urlButtonLink}
+                                                        onChange={e => setUrlButtonLink(e.target.value)}
+                                                        placeholder="https://example.com"
+                                                        className="bg-white text-xs font-medium text-foreground outline-none flex-1 px-3 py-1.5 rounded-lg border border-border"
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {interactiveTab === "call" && (
+                                                <div className="flex items-center gap-2 bg-primary/5 border border-primary/20 rounded-xl p-1.5 mt-2">
+                                                    <input
+                                                        value={callButtonText}
+                                                        maxLength={20}
+                                                        onChange={e => setCallButtonText(e.target.value)}
+                                                        placeholder="Button Text"
+                                                        className="bg-white text-xs font-bold text-foreground outline-none w-[120px] px-3 py-1.5 rounded-lg border border-border"
+                                                    />
+                                                    <input
+                                                        value={callButtonPhone}
+                                                        onChange={e => setCallButtonPhone(e.target.value)}
+                                                        placeholder="+91..."
+                                                        className="bg-white text-xs font-medium text-foreground outline-none flex-1 px-3 py-1.5 rounded-lg border border-border"
+                                                    />
+                                                </div>
+                                            )}
                                             <p className="text-[10px] text-muted-foreground/50 mt-2 font-medium">
                                                 Type your message in the input above, then hit Send ↗
                                             </p>

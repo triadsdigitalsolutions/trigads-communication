@@ -62,25 +62,33 @@ export async function sendMessageAction(contactId: string, text: string) {
     }
 }
 
-/** Send a WhatsApp interactive message with quick-reply buttons (max 3 buttons, max 20 chars per title) */
+/** Send a WhatsApp interactive message with quick-reply buttons, URL CTA, or Call CTA */
 export async function sendInteractiveMessageAction(
     contactId: string,
     bodyText: string,
-    buttonLabels: string[]
+    interactiveData: {
+        type: "reply" | "cta_url" | "cta_call";
+        buttons?: string[]; // for reply (max 3)
+        urlButton?: { text: string; url: string }; // for cta_url
+        callButton?: { text: string; phone: string }; // for cta_call
+    }
 ) {
     const session = await auth();
     if (!session?.user) return { success: false, error: "Unauthorized" };
 
     if (!bodyText.trim()) return { success: false, error: "Message body is required" };
-    if (buttonLabels.length === 0) return { success: false, error: "At least one button is required" };
-    if (buttonLabels.length > 3) return { success: false, error: "Maximum 3 buttons allowed" };
 
-    try {
-        const contactSnap = await getDoc(doc(db, "contacts", contactId));
-        if (!contactSnap.exists()) throw new Error("Contact not found");
-        const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
+    let interactive: any = {
+        type: "button",
+        body: { text: bodyText.trim() },
+        action: {},
+    };
 
-        const buttons = buttonLabels
+    if (interactiveData.type === "reply") {
+        if (!interactiveData.buttons || interactiveData.buttons.length === 0) return { success: false, error: "At least one button is required" };
+        if (interactiveData.buttons.length > 3) return { success: false, error: "Maximum 3 buttons allowed" };
+        interactive.type = "button";
+        interactive.action.buttons = interactiveData.buttons
             .filter(l => l.trim())
             .map((label, idx) => ({
                 type: "reply",
@@ -89,12 +97,28 @@ export async function sendInteractiveMessageAction(
                     title: label.trim().slice(0, 20), // WhatsApp max 20 chars
                 },
             }));
-
-        const interactive = {
-            type: "button",
-            body: { text: bodyText.trim() },
-            action: { buttons },
+    } else if (interactiveData.type === "cta_url") {
+        if (!interactiveData.urlButton?.text || !interactiveData.urlButton?.url) return { success: false, error: "Button text and URL are required" };
+        interactive.type = "cta_url";
+        interactive.action.name = "cta_url";
+        interactive.action.parameters = {
+            display_text: interactiveData.urlButton.text.trim().slice(0, 20),
+            url: interactiveData.urlButton.url.trim(),
         };
+    } else if (interactiveData.type === "cta_call") {
+        if (!interactiveData.callButton?.text || !interactiveData.callButton?.phone) return { success: false, error: "Button text and phone are required" };
+        interactive.type = "cta_call";
+        interactive.action.name = "cta_call";
+        interactive.action.parameters = {
+            display_text: interactiveData.callButton.text.trim().slice(0, 20),
+            phone_number: interactiveData.callButton.phone.trim(),
+        };
+    }
+
+    try {
+        const contactSnap = await getDoc(doc(db, "contacts", contactId));
+        if (!contactSnap.exists()) throw new Error("Contact not found");
+        const contact = { id: contactSnap.id, ...contactSnap.data() } as any;
 
         const messageRef = doc(collection(db, "messages"));
         await setDoc(messageRef, {

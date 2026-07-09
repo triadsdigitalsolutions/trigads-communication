@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
             mediaType: msg.content && typeof msg.content === 'object' ? msg.content.mediaType ?? null : null,
             mimeType: msg.content && typeof msg.content === 'object' ? msg.content.mimeType ?? null : null,
             mediaId: msg.content && typeof msg.content === 'object' ? msg.content.mediaId ?? null : null,
-            interactive: msg.type === 'interactive' && typeof msg.content === 'object' ? msg.content : null,
+            interactive: msg.type === 'interactive' && typeof msg.content === 'object' ? msg.content.interactive : null,
         }));
 
         return NextResponse.json(formattedMessages);
