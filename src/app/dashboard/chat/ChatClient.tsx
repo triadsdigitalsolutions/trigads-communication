@@ -550,8 +550,8 @@ export default function ChatClient({
                 </div>
 
                 {/* Contact list */}
-                <ScrollArea className="flex-1">
-                    <div className="px-2 pb-4">
+                <ScrollArea className="flex-1 overflow-hidden">
+                    <div className="p-2 md:p-3 space-y-0.5">
                         {filteredContacts.length === 0 ? (
                             <div className="py-16 text-center text-muted-foreground text-xs font-medium opacity-50">
                                 No conversations found
@@ -564,10 +564,10 @@ export default function ChatClient({
                                         setSelectedContact(contact);
                                         setIsMobileChatOpen(true);
                                     }}
-                                    className={`relative flex items-center gap-3 px-4 py-3 mx-2 my-1 rounded-[12px] cursor-pointer transition-all duration-200 group ${
+                                    className={`relative flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-200 group border w-full box-border ${
                                         selectedContact?.id === contact.id
-                                            ? "bg-primary/10 shadow-sm"
-                                            : "hover:bg-secondary/50"
+                                            ? "bg-primary/10 shadow-sm border-primary/20"
+                                            : "hover:bg-secondary/50 border-transparent"
                                     }`}
                                 >
                                     {/* Avatar */}
@@ -590,7 +590,7 @@ export default function ChatClient({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 min-w-0">
+                                    <div className="flex-1 min-w-0 overflow-hidden">
                                         <div className="flex items-baseline justify-between gap-2">
                                             <p className={`text-[14px] font-semibold truncate ${
                                                 selectedContact?.id === contact.id ? "text-primary" : "text-foreground"
