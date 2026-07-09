@@ -11,24 +11,25 @@ export default async function DashboardLayout({ children }: { children: React.Re
     const initials = name.split(" ").slice(0, 2).map((w: string) => w[0]).join("").toUpperCase();
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-background">
+        <div className="flex flex-col h-screen w-full overflow-hidden bg-[#e1e1de] relative">
+            <div className="hidden md:block absolute top-0 left-0 right-0 h-[127px] bg-[#00a884] z-0"></div>
+            <div className="flex flex-1 w-full md:max-w-[1600px] md:my-5 md:mx-auto bg-white md:shadow-[0_6px_18px_rgba(0,0,0,0.05)] md:rounded-sm overflow-hidden z-10 relative">
 
             {/* ── Desktop Sidebar ─────────────────────────── */}
-            <aside className="hidden md:flex flex-col w-[210px] shrink-0 h-screen bg-sidebar border-r border-sidebar-border shadow-sidebar">
+            <aside className="hidden md:flex flex-col w-[250px] lg:w-[300px] shrink-0 h-full bg-white border-r border-[#d1d7db]">
 
                 {/* Logo */}
-                <div className="flex items-center gap-3 px-5 h-[68px] shrink-0 border-b border-sidebar-border">
-                    <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-glow shrink-0">
-                        <Zap className="w-4 h-4 text-white fill-white/40" />
+                <div className="flex items-center gap-3 px-5 h-[60px] shrink-0 border-b border-[#d1d7db] bg-[#f0f2f5]">
+                    <div className="w-8 h-8 rounded-full bg-[#00a884] flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-4 h-4 text-white fill-white" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground/60 leading-none mb-0.5">Trigads</p>
-                        <p className="text-[15px] font-bold text-foreground leading-none">Proton</p>
+                        <p className="text-[15px] font-medium text-[#111b21] leading-none">Trigads Communication</p>
                     </div>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex flex-col gap-0.5 px-3 py-4 flex-1 overflow-y-auto custom-scrollbar">
+                <nav className="flex flex-col flex-1 overflow-y-auto custom-scrollbar bg-white py-2">
                     <NavItem href="/dashboard/chat"      icon={<MessageSquare className="w-4 h-4" />} label="Messages" />
                     <NavItem href="/dashboard/templates" icon={<Layout        className="w-4 h-4" />} label="Templates" />
                     <NavItem href="/dashboard/flows"     icon={<Zap           className="w-4 h-4" />} label="Flows" />
@@ -42,24 +43,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 </nav>
 
                 {/* User + signout */}
-                <div className="px-3 py-4 border-t border-sidebar-border shrink-0">
+                <div className="px-4 py-3 border-t border-[#d1d7db] bg-[#f0f2f5] shrink-0">
                     <div className="flex items-center gap-3">
-                        <Avatar className="w-8 h-8 rounded-xl ring-1 ring-border shrink-0">
-                            <AvatarFallback className="bg-primary/15 text-primary text-[11px] font-bold rounded-xl">
+                        <Avatar className="w-10 h-10 rounded-full shrink-0">
+                            <AvatarFallback className="bg-black/5 text-[#54656f] text-[13px] font-bold">
                                 {initials}
                             </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                            <p className="text-[13px] font-semibold text-foreground truncate leading-none mb-0.5">{name}</p>
-                            <p className="text-[11px] text-muted-foreground/70 leading-none">{role === "ADMIN" ? "Admin" : "Agent"}</p>
+                            <p className="text-[15px] font-medium text-[#111b21] truncate leading-none mb-1">{name}</p>
+                            <p className="text-[12px] text-[#667781] leading-none">{role === "ADMIN" ? "Admin" : "Agent"}</p>
                         </div>
                         <form action={async () => { "use server"; await signOut(); }}>
                             <button
                                 type="submit"
                                 title="Sign out"
-                                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-destructive hover:bg-destructive/8 transition-all shrink-0"
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-[#54656f] hover:bg-[#e9edef] transition-colors shrink-0"
                             >
-                                <LogOut className="w-3.5 h-3.5" />
+                                <LogOut className="w-5 h-5" />
                             </button>
                         </form>
                     </div>
@@ -73,6 +74,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
                 </main>
             </div>
 
+            </div>
             {/* ── Mobile bottom nav ───────────────────────── */}
             <nav className="md:hidden fixed bottom-3 left-3 right-3 z-50
                 flex items-center justify-around px-2 h-16
