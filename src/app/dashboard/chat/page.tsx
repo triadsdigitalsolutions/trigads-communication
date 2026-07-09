@@ -43,6 +43,8 @@ export default async function ChatPage() {
             contactMsgs.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); // desc
 
             const lastMsg = contactMsgs[0];
+            const incomingMsgs = contactMsgs.filter(m => m.direction === 'INCOMING');
+            const lastIncoming = incomingMsgs[0];
 
             return {
                 id: contact.id,
@@ -55,6 +57,7 @@ export default async function ChatPage() {
                 unread: 0,
                 assignedToId: contact.assignedToId || null,
                 assignedTo: contact.assignedToId && usersMap[contact.assignedToId] ? usersMap[contact.assignedToId] : null,
+                lastIncomingAt: lastIncoming ? new Date(lastIncoming.createdAt).toISOString() : null,
                 updatedAt: contact.updatedAt || contact.createdAt || new Date(0).toISOString()
             };
         });
