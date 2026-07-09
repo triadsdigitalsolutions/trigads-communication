@@ -590,15 +590,15 @@ export default function ChatClient({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 min-w-0 overflow-hidden">
+                                    <div className="flex-1 min-w-0">
                                         <div className="flex items-baseline justify-between gap-2">
-                                            <p className={`text-[14px] font-semibold truncate ${
+                                            <p className={`text-[14px] font-semibold truncate flex-1 min-w-0 ${
                                                 selectedContact?.id === contact.id ? "text-primary" : "text-foreground"
                                             }`}>{contact.name}</p>
                                             <span className="text-[11px] text-muted-foreground/60 shrink-0">{contact.time}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                            <p className="text-[12.5px] text-muted-foreground/70 truncate leading-tight flex-1">
+                                            <p className="text-[12.5px] text-muted-foreground/70 truncate leading-tight flex-1 min-w-0">
                                                 {!contact.assignedToId
                                                     ? <span className="text-primary/60 font-medium text-xs">Unattended</span>
                                                     : (contact.lastMessage || "No messages yet")
