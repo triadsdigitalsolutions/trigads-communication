@@ -475,7 +475,7 @@ export default function ChatClient({
     return (
         <div className="flex h-full bg-background font-sans overflow-hidden">
             {/* Column 2: Contacts List */}
-            <div className={`w-full md:w-[300px] lg:w-[320px] flex-col border-r border-border bg-white shrink-0 ${isMobileChatOpen ? 'hidden md:flex' : 'flex'}`}>
+            <div className={`w-full md:w-[300px] lg:w-[320px] flex-col border-r border-[#d1d7db] bg-white shrink-0 ${isMobileChatOpen ? 'hidden md:flex' : 'flex'}`}>
                 
                 {/* Header */}
                 <div className="px-5 pt-5 pb-3 space-y-3">
@@ -564,10 +564,10 @@ export default function ChatClient({
                                         setSelectedContact(contact);
                                         setIsMobileChatOpen(true);
                                     }}
-                                    className={`relative flex items-center gap-3 px-3 py-3 mx-0 cursor-pointer transition-all duration-150 rounded-xl group ${
+                                    className={`relative flex items-center gap-3 px-3 py-3 mx-0 cursor-pointer transition-all duration-150 group ${
                                         selectedContact?.id === contact.id
-                                            ? "bg-primary/8 border border-primary/12"
-                                            : "border border-transparent hover:bg-secondary/60"
+                                            ? "bg-[#f0f2f5]"
+                                            : "hover:bg-[#f5f6f6]"
                                     }`}
                                 >
                                     {/* Avatar */}
@@ -632,11 +632,11 @@ export default function ChatClient({
             </div>
 
             {/* Column 3: Chat Window */}
-            <div className={`flex-1 flex-col bg-secondary/20 relative min-h-0 overflow-hidden ${isMobileChatOpen ? 'flex' : 'hidden md:flex'}`}>
+            <div className={`flex-1 flex-col bg-[#efeae2] relative min-h-0 overflow-hidden ${isMobileChatOpen ? 'flex' : 'hidden md:flex'}`}>
                 {selectedContact ? (
                     <>
                         {/* Chat Header */}
-                        <div className="h-20 border-b border-border flex items-center justify-between px-4 md:px-10 bg-white/50 backdrop-blur-xl z-10 shrink-0">
+                        <div className="h-[60px] border-b border-[#d1d7db] flex items-center justify-between px-4 md:px-6 bg-[#f0f2f5] z-10 shrink-0">
                             <div className="flex items-center gap-3 md:gap-5">
                                 <Button 
                                     variant="ghost" 
@@ -646,11 +646,11 @@ export default function ChatClient({
                                 >
                                     <ArrowLeft className="w-6 h-6" />
                                 </Button>
-                                <Avatar className="h-12 w-12 md:h-14 md:w-14 rounded-2xl shadow-premium shrink-0">
-                                    <AvatarFallback className="bg-primary/10 text-primary text-xl font-black uppercase">{selectedContact.name[0]}</AvatarFallback>
+                                <Avatar className="h-10 w-10 rounded-full shrink-0">
+                                    <AvatarFallback className="bg-primary/10 text-primary text-lg font-medium">{selectedContact.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0">
-                                    <h2 className="font-black text-xl md:text-2xl tracking-tighter text-foreground truncate">{selectedContact.name}</h2>
+                                    <h2 className="font-medium text-[16px] text-[#111b21] truncate">{selectedContact.name}</h2>
                                     <div className="flex items-center gap-2 md:gap-3 mt-1 overflow-hidden">
                                         <div className="flex items-center gap-2">
                                             {selectedContact.tags?.map(tag => {
@@ -762,7 +762,7 @@ export default function ChatClient({
                         </div>
 
                         {/* Messages Area */}
-                        <ScrollArea ref={scrollRef} className="flex-1 min-h-0 p-6">
+                        <ScrollArea ref={scrollRef} className="flex-1 min-h-0 px-4 md:px-8 py-4 bg-[#efeae2]">
                             <div className="max-w-4xl mx-auto space-y-4 pb-6">
                                 {isLoadingMessages ? (
                                     <div className="flex flex-col items-center justify-center py-20 gap-4">
@@ -774,18 +774,20 @@ export default function ChatClient({
                                         <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary/60">Establishing Secure Sync</p>
                                     </div>
                                 ) : (
-                                    messages.map((msg) => (
+                                    messages.map((msg, index) => {
+                                        const isFirstInGroup = index === 0 || messages[index - 1].direction !== msg.direction;
+                                        return (
                                         <div
                                             key={msg.id}
-                                            className={`flex ${msg.direction === "OUTGOING" ? "justify-end" : "justify-start"} animate-in slide-in-from-bottom-6 duration-700 ease-out`}
+                                            className={`flex ${msg.direction === "OUTGOING" ? "justify-end" : "justify-start"} ${isFirstInGroup ? 'mt-3' : 'mt-0.5'}`}
                                         >
-                                            <div className="flex flex-col gap-2 max-w-[70%]">
+                                            <div className="flex flex-col max-w-[85%] md:max-w-[70%]">
                                                 <div
-                                                    className={`px-6 py-4 rounded-3xl shadow-premium relative ${msg.direction === "OUTGOING"
+                                                    className={`px-3 py-1.5 shadow-[0_1px_0.5px_rgba(11,20,26,0.13)] relative text-[14.2px] leading-[19px] flex flex-col ${msg.direction === "OUTGOING"
                                                         ? msg.status === "FAILED"
-                                                            ? "bg-destructive/10 text-destructive border border-destructive/20 font-extrabold rounded-tr-none text-base"
-                                                            : "bg-primary text-primary-foreground font-extrabold rounded-tr-none shadow-glow text-base"
-                                                        : "bg-white border border-border text-foreground font-medium rounded-tl-none"
+                                                            ? `bg-destructive/10 text-destructive border border-destructive/20 rounded-lg ${isFirstInGroup ? 'rounded-tr-none' : ''}`
+                                                            : `bg-[#d9fdd3] text-[#111b21] rounded-lg ${isFirstInGroup ? 'rounded-tr-none' : ''}`
+                                                        : `bg-white text-[#111b21] rounded-lg ${isFirstInGroup ? 'rounded-tl-none' : ''}`
                                                         }`}
                                                     title={msg.error || undefined}
                                                 >
@@ -834,13 +836,13 @@ export default function ChatClient({
                                                             <p className="font-bold truncate text-sm">{msg.text}</p>
                                                         </div>
                                                     ) : (
-                                                        <p className="leading-relaxed">{msg.text}</p>
+                                                        <p className="leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                                                     )}
                                                     
                                                     {msg.interactive && msg.interactive.type === 'button' && (
-                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
+                                                        <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-black/5">
                                                             {(msg.interactive.action?.buttons || []).map((btn: any, idx: number) => (
-                                                                <div key={idx} className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                                <div key={idx} className="py-2 px-4 rounded-lg text-center text-[14px] text-[#00a884] font-medium transition-colors hover:bg-black/5 cursor-pointer">
                                                                     {btn.reply?.title || 'Button'}
                                                                 </div>
                                                             ))}
@@ -848,8 +850,8 @@ export default function ChatClient({
                                                     )}
 
                                                     {msg.interactive && msg.interactive.type === 'cta_url' && (
-                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
-                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                        <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-black/5">
+                                                            <div className="py-2 px-4 rounded-lg text-center text-[14px] text-[#00a884] font-medium transition-colors hover:bg-black/5 cursor-pointer">
                                                                 <LinkIcon className="w-4 h-4 inline-block mr-2" />
                                                                 {msg.interactive.action?.parameters?.display_text || 'Visit Link'}
                                                             </div>
@@ -857,8 +859,8 @@ export default function ChatClient({
                                                     )}
 
                                                     {msg.interactive && msg.interactive.type === 'cta_call' && (
-                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
-                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                        <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-black/5">
+                                                            <div className="py-2 px-4 rounded-lg text-center text-[14px] text-[#00a884] font-medium transition-colors hover:bg-black/5 cursor-pointer">
                                                                 <Phone className="w-4 h-4 inline-block mr-2" />
                                                                 {msg.interactive.action?.parameters?.display_text || 'Call Now'}
                                                             </div>
@@ -866,13 +868,27 @@ export default function ChatClient({
                                                     )}
                                                     
                                                     {msg.interactive && msg.interactive.type === 'list' && (
-                                                        <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border/20">
-                                                            <div className={`py-2 px-4 rounded-xl text-center text-sm font-bold border transition-colors ${msg.direction === 'OUTGOING' ? 'bg-white/10 border-white/20 hover:bg-white/20' : 'bg-primary/5 border-primary/20 hover:bg-primary/10 text-primary'}`}>
+                                                        <div className="flex flex-col gap-1.5 mt-2 pt-2 border-t border-black/5">
+                                                            <div className="py-2 px-4 rounded-lg text-center text-[14px] text-[#00a884] font-medium transition-colors hover:bg-black/5 cursor-pointer">
                                                                 <List className="w-4 h-4 inline-block mr-2" />
                                                                 {msg.interactive.action?.button || 'View List'}
                                                             </div>
                                                         </div>
                                                     )}
+
+                                                    {/* Appended Timestamp inside bubble */}
+                                                    <div className={`flex items-center gap-1 mt-1 justify-end shrink-0 float-right ml-3 -mb-0.5 text-[#667781]`}>
+                                                        <span className="text-[11px] leading-[15px]">{msg.time}</span>
+                                                        {msg.direction === "OUTGOING" && msg.status !== "FAILED" && (
+                                                            <div className="flex">
+                                                                {msg.status === "READ" ? (
+                                                                    <CheckCheck className="w-[16px] h-[16px] text-[#53bdeb]" />
+                                                                ) : (
+                                                                    <Check className="w-[16px] h-[16px] text-[#8696a0]" />
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
 
                                                     {msg.status === "FAILED" && (
                                                         <div className="absolute -right-2 -top-2 bg-destructive text-white rounded-full p-1 shadow-lg">
@@ -881,20 +897,8 @@ export default function ChatClient({
                                                     )}
                                                 </div>
                                                 <div className={`flex flex-col ${msg.direction === "OUTGOING" ? "items-end" : "items-start"}`}>
-                                                    <div className={`flex items-center gap-3 px-4 ${msg.direction === "OUTGOING" ? "justify-end" : "justify-start"}`}>
-                                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">{msg.time}</span>
-                                                        {msg.direction === "OUTGOING" && msg.status !== "FAILED" && (
-                                                            <div className="flex">
-                                                                {msg.status === "READ" ? (
-                                                                    <CheckCheck className="w-4 h-4 text-primary" />
-                                                                ) : (
-                                                                    <Check className="w-4 h-4 text-muted-foreground/20" />
-                                                                )}
-                                                            </div>
-                                                        )}
-                                                    </div>
                                                     {msg.status === "FAILED" && (
-                                                        <p className="px-4 text-[10px] font-black uppercase tracking-tighter text-destructive mt-1 max-w-xs truncate" title={msg.error ?? undefined}>
+                                                        <p className="px-1 text-[11px] text-destructive mt-1 max-w-xs truncate" title={msg.error ?? undefined}>
                                                             {msg.error
                                                                 ? `${msg.error}${(msg as any).errorCode ? ` (${(msg as any).errorCode})` : ''}`
                                                                 : "Delivery failed"}
@@ -903,13 +907,13 @@ export default function ChatClient({
                                                 </div>
                                             </div>
                                         </div>
-                                    ))
+                                    )})
                                 )}
                             </div>
                         </ScrollArea>
 
                         {/* Bottom Input Area */}
-                        <div className="p-6 bg-gradient-to-t from-secondary/50 via-transparent to-transparent shrink-0 relative">
+                        <div className="p-3 md:p-4 bg-[#f0f2f5] border-t border-[#d1d7db] shrink-0 relative">
                             {!selectedContact.assignedToId ? (
                                 <div className="max-w-4xl mx-auto">
                                     <div className="flex flex-col items-center justify-center p-8 bg-white/80 backdrop-blur-md rounded-[2.5rem] border-2 border-dashed border-primary/20 shadow-premium gap-4 animate-in zoom-in-95">
@@ -955,7 +959,7 @@ export default function ChatClient({
                                 <div className="max-w-4xl mx-auto relative group w-full">
                                     <Input
                                         ref={inputRef}
-                                        placeholder="Communicate with precision..."
+                                        placeholder="Type a message"
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
                                         onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
